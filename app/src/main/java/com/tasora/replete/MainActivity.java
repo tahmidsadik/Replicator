@@ -29,13 +29,11 @@ import java.util.Objects;
 
 public class MainActivity extends AppCompatActivity {
 
-    //heavily inspired from Ambly
+    //Replete Clone
     private static final String REPLICATOR_LOG = "var console = {}; console.log = function(msg) { " +
             "android.util.Log.d('RHINO: ', msg); };";
 
     private static final String GLOBAL_CTX = "var global = this;";
-
-    private static final String RHINO_LOG = "var log = Packages.io.vec.MainActivity.log;";
 
     private static final String REPLICATOR_IMPORT = "var REPLICATOR_IMPORT = com.tasora.replete.MainActivity.importReplicator;" +
             "var CLOSURE_IMPORT_SCRIPT = function(src) {" +
@@ -96,10 +94,6 @@ public class MainActivity extends AppCompatActivity {
         return convertStreamToString(a.getAssets().open(valid_path));
     }
 
-//    public static String importReplicator(String src, Activity a) throws Exception {
-//        return convertStreamToString(a.getAssets().open(src));
-//    }
-
     public void runScript() {
         Context rhino = Context.enter();
         // Turn off optimization to make Rhino Android compatible
@@ -114,10 +108,6 @@ public class MainActivity extends AppCompatActivity {
             String outdeps = convertStreamToString(getAssets().open("out/deps.js"));
             String macroSrc = convertStreamToString(getAssets().open("out/cljs/core$macros.js"));
             String corejs = convertStreamToString(getAssets().open("out/cljs/core.js"));
-
-
-            // Note the forth argument is 1, which means the JavaScript source has
-            // been compressed to only one line using something like YUI
 
             //setting up console.log
             rhino.evaluateString(scope, REPLICATOR_LOG, "MainActivity", 1, null);
@@ -147,7 +137,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (Exception e) {
             e.printStackTrace();
         } finally {
-            // We must exit the Rhino VM
             Context.exit();
         }
     }
@@ -168,9 +157,6 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
