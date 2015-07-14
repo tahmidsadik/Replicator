@@ -27,20 +27,20 @@ return shifted;
 cljs.source_map.base64_vlq.encode_val = (function cljs$source_map$base64_vlq$encode_val(n){
 var sb = (new goog.string.StringBuffer());
 var vlq = cljs.source_map.base64_vlq.to_vlq_signed(n);
-var digit_10052 = (vlq & cljs.source_map.base64_vlq.vlq_base_mask);
-var vlq_10053__$1 = (vlq >>> cljs.source_map.base64_vlq.vlq_base_shift);
+var digit_9757 = (vlq & cljs.source_map.base64_vlq.vlq_base_mask);
+var vlq_9758__$1 = (vlq >>> cljs.source_map.base64_vlq.vlq_base_shift);
 while(true){
-if((vlq_10053__$1 > (0))){
-var digit_10054__$1 = (digit_10052 | cljs.source_map.base64_vlq.vlq_continuation_bit);
-sb.append(cljs.source_map.base64.encode(digit_10054__$1));
+if((vlq_9758__$1 > (0))){
+var digit_9759__$1 = (digit_9757 | cljs.source_map.base64_vlq.vlq_continuation_bit);
+sb.append(cljs.source_map.base64.encode(digit_9759__$1));
 
-var G__10055 = (vlq_10053__$1 & cljs.source_map.base64_vlq.vlq_base_mask);
-var G__10056 = (vlq_10053__$1 >>> cljs.source_map.base64_vlq.vlq_base_shift);
-digit_10052 = G__10055;
-vlq_10053__$1 = G__10056;
+var G__9760 = (vlq_9758__$1 & cljs.source_map.base64_vlq.vlq_base_mask);
+var G__9761 = (vlq_9758__$1 >>> cljs.source_map.base64_vlq.vlq_base_shift);
+digit_9757 = G__9760;
+vlq_9758__$1 = G__9761;
 continue;
 } else {
-sb.append(cljs.source_map.base64.encode(digit_10052));
+sb.append(cljs.source_map.base64.encode(digit_9757));
 }
 break;
 }
@@ -68,12 +68,12 @@ var digit__$1 = (digit & cljs.source_map.base64_vlq.vlq_base_mask);
 var result__$1 = (result + (digit__$1 << shift));
 var shift__$1 = (shift + cljs.source_map.base64_vlq.vlq_base_shift);
 if(continuation_QMARK_){
-var G__10057 = i__$1;
-var G__10058 = result__$1;
-var G__10059 = shift__$1;
-i = G__10057;
-result = G__10058;
-shift = G__10059;
+var G__9762 = i__$1;
+var G__9763 = result__$1;
+var G__9764 = shift__$1;
+i = G__9762;
+result = G__9763;
+shift = G__9764;
 continue;
 } else {
 return (new cljs.core.LazySeq(null,((function (i,result,shift,i__$1,continuation_QMARK_,digit__$1,result__$1,shift__$1,digit,l){

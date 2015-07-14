@@ -17,7 +17,7 @@ throw (new Error("UUID literal expects a string as its representation."));
 }
 
 try{return cljs.core.uuid(form);
-}catch (e8565){var e = e8565;
+}catch (e8270){var e = e8270;
 throw (new Error(e.message));
 }});
 cljs.tagged_literals.read_inst = (function cljs$tagged_literals$read_inst(form){
@@ -27,7 +27,7 @@ throw (new Error("Instance literal expects a string for its timestamp."));
 }
 
 try{return cljs.reader.read_date(form);
-}catch (e8567){var e = e8567;
+}catch (e8272){var e = e8272;
 throw (new Error(e.message));
 }});
 cljs.tagged_literals.valid_js_literal_key_QMARK_ = (function cljs$tagged_literals$valid_js_literal_key_QMARK_(k){
@@ -49,8 +49,8 @@ cljs.tagged_literals.JSValue.cljs$lang$type = true;
 
 cljs.tagged_literals.JSValue.cljs$lang$ctorStr = "cljs.tagged-literals/JSValue";
 
-cljs.tagged_literals.JSValue.cljs$lang$ctorPrWriter = (function (this__4740__auto__,writer__4741__auto__,opt__4742__auto__){
-return cljs.core._write(writer__4741__auto__,"cljs.tagged-literals/JSValue");
+cljs.tagged_literals.JSValue.cljs$lang$ctorPrWriter = (function (this__4652__auto__,writer__4653__auto__,opt__4654__auto__){
+return cljs.core._write(writer__4653__auto__,"cljs.tagged-literals/JSValue");
 });
 
 cljs.tagged_literals.__GT_JSValue = (function cljs$tagged_literals$__GT_JSValue(val){

@@ -14,20 +14,9 @@ goog.addDependency("../cljs/source_map/base64.js", ['cljs.source_map.base64'], [
 goog.addDependency("../cljs/source_map/base64_vlq.js", ['cljs.source_map.base64_vlq'], ['cljs.source_map.base64', 'cljs.core', 'goog.string.StringBuffer', 'clojure.string']);
 goog.addDependency("../cljs/source_map.js", ['cljs.source_map'], ['cljs.source_map.base64_vlq', 'cljs.core', 'clojure.set', 'clojure.string']);
 goog.addDependency("../cljs/compiler.js", ['cljs.compiler'], ['cljs.tools.reader', 'goog.string', 'cljs.core', 'cljs.env', 'goog.string.StringBuffer', 'cljs.analyzer', 'cljs.source_map', 'clojure.string']);
-goog.addDependency("../com/cognitect/transit/util.js", ['com.cognitect.transit.util'], ['goog.object']);
-goog.addDependency("../com/cognitect/transit/eq.js", ['com.cognitect.transit.eq'], ['com.cognitect.transit.util']);
-goog.addDependency("../com/cognitect/transit/types.js", ['com.cognitect.transit.types'], ['com.cognitect.transit.util', 'com.cognitect.transit.eq', 'goog.math.Long']);
-goog.addDependency("../com/cognitect/transit/delimiters.js", ['com.cognitect.transit.delimiters'], []);
-goog.addDependency("../com/cognitect/transit/caching.js", ['com.cognitect.transit.caching'], ['com.cognitect.transit.delimiters']);
-goog.addDependency("../com/cognitect/transit/impl/decoder.js", ['com.cognitect.transit.impl.decoder'], ['com.cognitect.transit.util', 'com.cognitect.transit.delimiters', 'com.cognitect.transit.caching', 'com.cognitect.transit.types']);
-goog.addDependency("../com/cognitect/transit/impl/reader.js", ['com.cognitect.transit.impl.reader'], ['com.cognitect.transit.impl.decoder', 'com.cognitect.transit.caching']);
-goog.addDependency("../com/cognitect/transit/handlers.js", ['com.cognitect.transit.handlers'], ['com.cognitect.transit.util', 'com.cognitect.transit.types', 'goog.math.Long']);
-goog.addDependency("../com/cognitect/transit/impl/writer.js", ['com.cognitect.transit.impl.writer'], ['com.cognitect.transit.util', 'com.cognitect.transit.caching', 'com.cognitect.transit.handlers', 'com.cognitect.transit.types', 'com.cognitect.transit.delimiters', 'goog.math.Long']);
-goog.addDependency("../com/cognitect/transit.js", ['com.cognitect.transit'], ['com.cognitect.transit.impl.reader', 'com.cognitect.transit.impl.writer', 'com.cognitect.transit.types', 'com.cognitect.transit.eq', 'com.cognitect.transit.impl.decoder', 'com.cognitect.transit.caching']);
-goog.addDependency("../cognitect/transit.js", ['cognitect.transit'], ['com.cognitect.transit.eq', 'cljs.core', 'com.cognitect.transit.types', 'com.cognitect.transit', 'goog.math.Long']);
 goog.addDependency("../cljs/pprint.js", ['cljs.pprint'], ['goog.string', 'cljs.core', 'goog.string.StringBuffer', 'clojure.string']);
 goog.addDependency("../cljs/repl.js", ['cljs.repl'], ['cljs.core']);
-goog.addDependency("../replete/core.js", ['replete.core'], ['cljs.compiler', 'cljs.tools.reader', 'cljs.core', 'cljs.tools.reader.reader_types', 'cljs.env', 'cognitect.transit', 'cljs.pprint', 'cljs.tagged_literals', 'cljs.analyzer', 'cljs.repl', 'clojure.string']);
+goog.addDependency("../replete/core.js", ['replete.core'], ['cljs.compiler', 'cljs.tools.reader', 'cljs.core', 'cljs.tools.reader.reader_types', 'cljs.env', 'cljs.pprint', 'cljs.tagged_literals', 'cljs.analyzer', 'cljs.repl', 'clojure.string']);
 goog.addDependency("base.js", ['goog'], []);
 goog.addDependency("../cljs/core.js", ['cljs.core'], ['goog.string', 'goog.object', 'goog.string.StringBuffer', 'goog.array']);
 goog.addDependency("../clojure/string.js", ['clojure.string'], ['goog.string', 'cljs.core', 'goog.string.StringBuffer']);
@@ -46,3 +35,4 @@ goog.addDependency("../cljs/source_map.js", ['cljs.source_map'], ['cljs.source_m
 goog.addDependency("../cljs/compiler.js", ['cljs.compiler'], ['cljs.tools.reader', 'goog.string', 'cljs.core', 'cljs.env', 'goog.string.StringBuffer', 'cljs.analyzer', 'cljs.source_map', 'clojure.string']);
 goog.addDependency("../clojure/walk.js", ['clojure.walk'], ['cljs.core']);
 goog.addDependency("../cljs/core$macros.js", ['cljs.core$macros'], ['cljs.compiler', 'cljs.core', 'cljs.env', 'clojure.set', 'cljs.analyzer', 'clojure.walk']);
+goog.addDependency("../cljs/core.cache.js", ['cljs.cache'], ['cljs.core']);
