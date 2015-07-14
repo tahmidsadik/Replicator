@@ -11,7 +11,7 @@
             [cljs.repl :as repl]
             [clojure.string :as s]))
 
-(def DEBUG false)
+(def DEBUG true)
 
 (def cenv 
   ;manually require as first stage comilation it doesn't exist

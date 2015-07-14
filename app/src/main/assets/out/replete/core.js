@@ -10,7 +10,7 @@ goog.require('cljs.analyzer');
 goog.require('cljs.pprint');
 goog.require('clojure.string');
 goog.require('cljs.repl');
-replete.core.DEBUG = false;
+replete.core.DEBUG = true;
 replete.core.cenv = (function (){var _ = eval("goog.require('cljs.cache')");
 var env = cljs.env.default_compiler_env.cljs$core$IFn$_invoke$arity$0();
 cljs.core.swap_BANG_.cljs$core$IFn$_invoke$arity$4(env,cljs.core.assoc_in,new cljs.core.PersistentVector(null, 2, 5, cljs.core.PersistentVector.EMPTY_NODE, [new cljs.core.Keyword("cljs.analyzer","namespaces","cljs.analyzer/namespaces",-260788927),new cljs.core.Symbol(null,"cljs.core","cljs.core",770546058,null)], null),cljs.cache.core);
@@ -32,9 +32,9 @@ return cljs.core.assoc.cljs$core$IFn$_invoke$arity$3(r,(f.cljs$core$IFn$_invoke$
 }),cljs.core.PersistentArrayMap.EMPTY,m);
 });
 replete.core.init_app_env = (function replete$core$init_app_env(app_env){
-var G__8160 = replete.core.app_env;
-var G__8161 = replete.core.map_keys(cljs.core.keyword,cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$1(app_env));
-return (cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2 ? cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2(G__8160,G__8161) : cljs.core.reset_BANG_.call(null,G__8160,G__8161));
+var G__5972 = replete.core.app_env;
+var G__5973 = replete.core.map_keys(cljs.core.keyword,cljs.core.js__GT_clj.cljs$core$IFn$_invoke$arity$1(app_env));
+return (cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2 ? cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2(G__5972,G__5973) : cljs.core.reset_BANG_.call(null,G__5972,G__5973));
 });
 goog.exportSymbol('replete.core.init_app_env', replete.core.init_app_env);
 /**
@@ -47,22 +47,22 @@ replete.core.repl_read_string = (function replete$core$repl_read_string(line){
 return cljs.tools.reader.read_string.cljs$core$IFn$_invoke$arity$2(new cljs.core.PersistentArrayMap(null, 2, [new cljs.core.Keyword(null,"read-cond","read-cond",1056899244),new cljs.core.Keyword(null,"allow","allow",-1857325745),new cljs.core.Keyword(null,"features","features",-1146962336),new cljs.core.PersistentHashSet(null, new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"cljs","cljs",1492417629),null], null), null)], null),line);
 });
 replete.core.is_readable_QMARK_ = (function replete$core$is_readable_QMARK_(line){
-var _STAR_data_readers_STAR_8165 = cljs.tools.reader._STAR_data_readers_STAR_;
+var _STAR_data_readers_STAR_5977 = cljs.tools.reader._STAR_data_readers_STAR_;
 cljs.tools.reader._STAR_data_readers_STAR_ = cljs.tagged_literals._STAR_cljs_data_readers_STAR_;
 
-try{var env__5501__auto__ = replete.core.cenv;
-var env__5501__auto____$1 = ((cljs.core.map_QMARK_(env__5501__auto__))?(cljs.core.atom.cljs$core$IFn$_invoke$arity$1 ? cljs.core.atom.cljs$core$IFn$_invoke$arity$1(env__5501__auto__) : cljs.core.atom.call(null,env__5501__auto__)):((((env__5501__auto__ instanceof cljs.core.Atom)) && (cljs.core.map_QMARK_((cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(env__5501__auto__) : cljs.core.deref.call(null,env__5501__auto__)))))?env__5501__auto__:(function(){throw (new Error([cljs.core.str("Compiler environment must be a map or atom containing a map, not "),cljs.core.str(cljs.core.type(env__5501__auto__))].join('')))})()
+try{var env__5187__auto__ = replete.core.cenv;
+var env__5187__auto____$1 = ((cljs.core.map_QMARK_(env__5187__auto__))?(cljs.core.atom.cljs$core$IFn$_invoke$arity$1 ? cljs.core.atom.cljs$core$IFn$_invoke$arity$1(env__5187__auto__) : cljs.core.atom.call(null,env__5187__auto__)):((((env__5187__auto__ instanceof cljs.core.Atom)) && (cljs.core.map_QMARK_((cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(env__5187__auto__) : cljs.core.deref.call(null,env__5187__auto__)))))?env__5187__auto__:(function(){throw (new Error([cljs.core.str("Compiler environment must be a map or atom containing a map, not "),cljs.core.str(cljs.core.type(env__5187__auto__))].join('')))})()
 ));
-var _STAR_compiler_STAR_8166 = cljs.env._STAR_compiler_STAR_;
-cljs.env._STAR_compiler_STAR_ = env__5501__auto____$1;
+var _STAR_compiler_STAR_5978 = cljs.env._STAR_compiler_STAR_;
+cljs.env._STAR_compiler_STAR_ = env__5187__auto____$1;
 
 try{try{replete.core.repl_read_string(line);
 
 return true;
-}catch (e8167){var _ = e8167;
+}catch (e5979){var _ = e5979;
 return false;
-}}finally {cljs.env._STAR_compiler_STAR_ = _STAR_compiler_STAR_8166;
-}}finally {cljs.tools.reader._STAR_data_readers_STAR_ = _STAR_data_readers_STAR_8165;
+}}finally {cljs.env._STAR_compiler_STAR_ = _STAR_compiler_STAR_5978;
+}}finally {cljs.tools.reader._STAR_data_readers_STAR_ = _STAR_data_readers_STAR_5977;
 }});
 goog.exportSymbol('replete.core.is_readable_QMARK_', replete.core.is_readable_QMARK_);
 replete.core.current_ns = (cljs.core.atom.cljs$core$IFn$_invoke$arity$1 ? cljs.core.atom.cljs$core$IFn$_invoke$arity$1(new cljs.core.Symbol(null,"cljs.user","cljs.user",877795071,null)) : cljs.core.atom.call(null,new cljs.core.Symbol(null,"cljs.user","cljs.user",877795071,null)));
@@ -73,8 +73,8 @@ replete.core.repl_specials = new cljs.core.PersistentHashSet(null, new cljs.core
 replete.core.repl_special_QMARK_ = (function replete$core$repl_special_QMARK_(form){
 var and__4061__auto__ = cljs.core.seq_QMARK_(form);
 if(and__4061__auto__){
-var G__8171 = cljs.core.first(form);
-return (replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1 ? replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1(G__8171) : replete.core.repl_specials.call(null,G__8171));
+var G__5983 = cljs.core.first(form);
+return (replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1 ? replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1(G__5983) : replete.core.repl_specials.call(null,G__5983));
 } else {
 return and__4061__auto__;
 }
@@ -107,38 +107,38 @@ throw (new Error([cljs.core.str("Assert failed: "),cljs.core.str(cljs.core.pr_st
 }
 
 try{return cljs.analyzer.resolve_var.cljs$core$IFn$_invoke$arity$3(env,sym,cljs.analyzer.confirm_var_exists_throw());
-}catch (e8173){var _ = e8173;
+}catch (e5985){var _ = e5985;
 return cljs.analyzer.resolve_macro_var(env,sym);
 }});
 replete.core.read_eval_print = (function replete$core$read_eval_print(line){
-var _STAR_cljs_ns_STAR_8186 = cljs.analyzer._STAR_cljs_ns_STAR_;
-var _STAR_ns_STAR_8187 = cljs.core._STAR_ns_STAR_;
-var _STAR_data_readers_STAR_8188 = cljs.tools.reader._STAR_data_readers_STAR_;
+var _STAR_cljs_ns_STAR_5998 = cljs.analyzer._STAR_cljs_ns_STAR_;
+var _STAR_ns_STAR_5999 = cljs.core._STAR_ns_STAR_;
+var _STAR_data_readers_STAR_6000 = cljs.tools.reader._STAR_data_readers_STAR_;
 cljs.analyzer._STAR_cljs_ns_STAR_ = (cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(replete.core.current_ns) : cljs.core.deref.call(null,replete.core.current_ns));
 
 cljs.core._STAR_ns_STAR_ = cljs.core.create_ns.cljs$core$IFn$_invoke$arity$1((cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(replete.core.current_ns) : cljs.core.deref.call(null,replete.core.current_ns)));
 
 cljs.tools.reader._STAR_data_readers_STAR_ = cljs.tagged_literals._STAR_cljs_data_readers_STAR_;
 
-try{var env__5501__auto__ = replete.core.cenv;
-var env__5501__auto____$1 = ((cljs.core.map_QMARK_(env__5501__auto__))?(cljs.core.atom.cljs$core$IFn$_invoke$arity$1 ? cljs.core.atom.cljs$core$IFn$_invoke$arity$1(env__5501__auto__) : cljs.core.atom.call(null,env__5501__auto__)):((((env__5501__auto__ instanceof cljs.core.Atom)) && (cljs.core.map_QMARK_((cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(env__5501__auto__) : cljs.core.deref.call(null,env__5501__auto__)))))?env__5501__auto__:(function(){throw (new Error([cljs.core.str("Compiler environment must be a map or atom containing a map, not "),cljs.core.str(cljs.core.type(env__5501__auto__))].join('')))})()
+try{var env__5187__auto__ = replete.core.cenv;
+var env__5187__auto____$1 = ((cljs.core.map_QMARK_(env__5187__auto__))?(cljs.core.atom.cljs$core$IFn$_invoke$arity$1 ? cljs.core.atom.cljs$core$IFn$_invoke$arity$1(env__5187__auto__) : cljs.core.atom.call(null,env__5187__auto__)):((((env__5187__auto__ instanceof cljs.core.Atom)) && (cljs.core.map_QMARK_((cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(env__5187__auto__) : cljs.core.deref.call(null,env__5187__auto__)))))?env__5187__auto__:(function(){throw (new Error([cljs.core.str("Compiler environment must be a map or atom containing a map, not "),cljs.core.str(cljs.core.type(env__5187__auto__))].join('')))})()
 ));
-var _STAR_compiler_STAR_8189 = cljs.env._STAR_compiler_STAR_;
-cljs.env._STAR_compiler_STAR_ = env__5501__auto____$1;
+var _STAR_compiler_STAR_6001 = cljs.env._STAR_compiler_STAR_;
+cljs.env._STAR_compiler_STAR_ = env__5187__auto____$1;
 
 try{var env = cljs.core.assoc.cljs$core$IFn$_invoke$arity$variadic(cljs.analyzer.empty_env(),new cljs.core.Keyword(null,"context","context",-830191113),new cljs.core.Keyword(null,"expr","expr",745722291),cljs.core.array_seq([new cljs.core.Keyword(null,"ns","ns",441598760),new cljs.core.PersistentArrayMap(null, 1, [new cljs.core.Keyword(null,"name","name",1843675177),(cljs.core.deref.cljs$core$IFn$_invoke$arity$1 ? cljs.core.deref.cljs$core$IFn$_invoke$arity$1(replete.core.current_ns) : cljs.core.deref.call(null,replete.core.current_ns))], null),new cljs.core.Keyword(null,"def-emits-var","def-emits-var",-1551927320),true], 0));
 try{var _ = (cljs.core.truth_(replete.core.DEBUG)?cljs.core.prn.cljs$core$IFn$_invoke$arity$variadic(cljs.core.array_seq(["line:",line], 0)):null);
 var form = replete.core.repl_read_string(line);
 if(cljs.core.truth_(replete.core.repl_special_QMARK_(form))){
-var G__8191 = cljs.core.first(form);
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Symbol(null,"in-ns","in-ns",-2089468466,null),G__8191)){
-var G__8192 = replete.core.current_ns;
-var G__8193 = cljs.core.second(cljs.core.second(form));
-return (cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2 ? cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2(G__8192,G__8193) : cljs.core.reset_BANG_.call(null,G__8192,G__8193));
+var G__6003 = cljs.core.first(form);
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Symbol(null,"in-ns","in-ns",-2089468466,null),G__6003)){
+var G__6004 = replete.core.current_ns;
+var G__6005 = cljs.core.second(cljs.core.second(form));
+return (cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2 ? cljs.core.reset_BANG_.cljs$core$IFn$_invoke$arity$2(G__6004,G__6005) : cljs.core.reset_BANG_.call(null,G__6004,G__6005));
 } else {
-if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Symbol(null,"doc","doc",-741138878,null),G__8191)){
-if(cljs.core.truth_((function (){var G__8194 = cljs.core.second(form);
-return (replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1 ? replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1(G__8194) : replete.core.repl_specials.call(null,G__8194));
+if(cljs.core._EQ_.cljs$core$IFn$_invoke$arity$2(new cljs.core.Symbol(null,"doc","doc",-741138878,null),G__6003)){
+if(cljs.core.truth_((function (){var G__6006 = cljs.core.second(form);
+return (replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1 ? replete.core.repl_specials.cljs$core$IFn$_invoke$arity$1(G__6006) : replete.core.repl_specials.call(null,G__6006));
 })())){
 return cljs.repl.print_doc(replete.core.repl_special_doc(cljs.core.second(form)));
 } else {
@@ -157,30 +157,30 @@ var ___$1 = (cljs.core.truth_(replete.core.DEBUG)?cljs.core.prn.cljs$core$IFn$_i
 var ast = cljs.analyzer.analyze.cljs$core$IFn$_invoke$arity$2(env,form);
 var ___$2 = (cljs.core.truth_(replete.core.DEBUG)?cljs.core.prn.cljs$core$IFn$_invoke$arity$variadic(cljs.core.array_seq(["ast:",ast], 0)):null);
 var js = (function (){var sb__5028__auto__ = (new goog.string.StringBuffer());
-var _STAR_print_newline_STAR_8195_8198 = cljs.core._STAR_print_newline_STAR_;
-var _STAR_print_fn_STAR_8196_8199 = cljs.core._STAR_print_fn_STAR_;
+var _STAR_print_newline_STAR_6007_6010 = cljs.core._STAR_print_newline_STAR_;
+var _STAR_print_fn_STAR_6008_6011 = cljs.core._STAR_print_fn_STAR_;
 cljs.core._STAR_print_newline_STAR_ = true;
 
-cljs.core._STAR_print_fn_STAR_ = ((function (_STAR_print_newline_STAR_8195_8198,_STAR_print_fn_STAR_8196_8199,sb__5028__auto__,___$1,ast,___$2,_,form,env,_STAR_compiler_STAR_8189,env__5501__auto__,env__5501__auto____$1,_STAR_cljs_ns_STAR_8186,_STAR_ns_STAR_8187,_STAR_data_readers_STAR_8188){
+cljs.core._STAR_print_fn_STAR_ = ((function (_STAR_print_newline_STAR_6007_6010,_STAR_print_fn_STAR_6008_6011,sb__5028__auto__,___$1,ast,___$2,_,form,env,_STAR_compiler_STAR_6001,env__5187__auto__,env__5187__auto____$1,_STAR_cljs_ns_STAR_5998,_STAR_ns_STAR_5999,_STAR_data_readers_STAR_6000){
 return (function (x__5029__auto__){
 return sb__5028__auto__.append(x__5029__auto__);
-});})(_STAR_print_newline_STAR_8195_8198,_STAR_print_fn_STAR_8196_8199,sb__5028__auto__,___$1,ast,___$2,_,form,env,_STAR_compiler_STAR_8189,env__5501__auto__,env__5501__auto____$1,_STAR_cljs_ns_STAR_8186,_STAR_ns_STAR_8187,_STAR_data_readers_STAR_8188))
+});})(_STAR_print_newline_STAR_6007_6010,_STAR_print_fn_STAR_6008_6011,sb__5028__auto__,___$1,ast,___$2,_,form,env,_STAR_compiler_STAR_6001,env__5187__auto__,env__5187__auto____$1,_STAR_cljs_ns_STAR_5998,_STAR_ns_STAR_5999,_STAR_data_readers_STAR_6000))
 ;
 
-try{var val__5507__auto___8200 = cljs.env._STAR_compiler_STAR_;
-if((val__5507__auto___8200 == null)){
+try{var val__5193__auto___6012 = cljs.env._STAR_compiler_STAR_;
+if((val__5193__auto___6012 == null)){
 cljs.env._STAR_compiler_STAR_ = cljs.env.default_compiler_env.cljs$core$IFn$_invoke$arity$0();
 } else {
 }
 
 try{cljs.compiler.emit(ast);
-}finally {if((val__5507__auto___8200 == null)){
+}finally {if((val__5193__auto___6012 == null)){
 cljs.env._STAR_compiler_STAR_ = null;
 } else {
 }
-}}finally {cljs.core._STAR_print_fn_STAR_ = _STAR_print_fn_STAR_8196_8199;
+}}finally {cljs.core._STAR_print_fn_STAR_ = _STAR_print_fn_STAR_6008_6011;
 
-cljs.core._STAR_print_newline_STAR_ = _STAR_print_newline_STAR_8195_8198;
+cljs.core._STAR_print_newline_STAR_ = _STAR_print_newline_STAR_6007_6010;
 }
 return [cljs.core.str(sb__5028__auto__)].join('');
 })();
@@ -205,29 +205,29 @@ cljs.core._STAR_1 = ret;
 
 return ret;
 })()], 0));
-}catch (e8197){if((e8197 instanceof Error)){
-var e = e8197;
+}catch (e6009){if((e6009 instanceof Error)){
+var e = e6009;
 cljs.core._STAR_e = e;
 
 return cljs.core.print.cljs$core$IFn$_invoke$arity$variadic(cljs.core.array_seq([e.message,"\n",cljs.core.first(clojure.string.split.cljs$core$IFn$_invoke$arity$2(e.stack,/eval code/))], 0));
 } else {
-throw e8197;
+throw e6009;
 
 }
 }}
-}catch (e8190){if((e8190 instanceof Error)){
-var e = e8190;
+}catch (e6002){if((e6002 instanceof Error)){
+var e = e6002;
 return cljs.core.println.cljs$core$IFn$_invoke$arity$variadic(cljs.core.array_seq([e.message], 0));
 } else {
-throw e8190;
+throw e6002;
 
 }
-}}finally {cljs.env._STAR_compiler_STAR_ = _STAR_compiler_STAR_8189;
-}}finally {cljs.tools.reader._STAR_data_readers_STAR_ = _STAR_data_readers_STAR_8188;
+}}finally {cljs.env._STAR_compiler_STAR_ = _STAR_compiler_STAR_6001;
+}}finally {cljs.tools.reader._STAR_data_readers_STAR_ = _STAR_data_readers_STAR_6000;
 
-cljs.core._STAR_ns_STAR_ = _STAR_ns_STAR_8187;
+cljs.core._STAR_ns_STAR_ = _STAR_ns_STAR_5999;
 
-cljs.analyzer._STAR_cljs_ns_STAR_ = _STAR_cljs_ns_STAR_8186;
+cljs.analyzer._STAR_cljs_ns_STAR_ = _STAR_cljs_ns_STAR_5998;
 }});
 goog.exportSymbol('replete.core.read_eval_print', replete.core.read_eval_print);
 

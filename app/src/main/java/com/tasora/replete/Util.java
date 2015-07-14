@@ -1,8 +1,6 @@
 package com.tasora.replete;
-
 import android.app.Activity;
 import android.util.Log;
-
 import java.io.BufferedReader;
 import java.io.InputStream;
 import java.io.InputStreamReader;
@@ -10,14 +8,17 @@ import java.io.InputStreamReader;
 public class Util {
 
     public static final String REPLICATOR_LOG = "var console = {}; console.log = function(msg) { " +
-            "android.util.Log.d('RHINO: ', msg); };";
+            "android.util.Log.d('RHINO: ', msg); };" +
+            "var print = function(str_arg) {" +
+            "android.util.Log.d('Replicator: ', str_arg);" +
+            "javaContext.updateUi(str_arg); }; ";
 
     public static final String GLOBAL_CTX = "var global = this;";
 
     public static final String REPLICATOR_IMPORT = "var REPLICATOR_IMPORT = com.tasora.replete.Util.importReplicator;" +
             "var CLOSURE_IMPORT_SCRIPT = function(src) {" +
             "if (src === 'undefined' || src === undefined) {return true;}" +
-            "eval( String(REPLICATOR_IMPORT(src, javaContext))); return true};";
+            "com.tasora.replete.MainActivity.evalJs( String(REPLICATOR_IMPORT(src, javaContext))); return true};";
 
     public static void log(String msg) {
         android.util.Log.i("RHINO_LOG", msg);
