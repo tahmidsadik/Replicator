@@ -13,13 +13,11 @@
 
 (def DEBUG false)
 
-(def cenv 
-  ;manually require as first stage comilation it doesn't exist
-  (let [ _ (js/eval "goog.require('cljs.cache')")
-        env (env/default-compiler-env)] 
-    (swap! env assoc-in [::ana/namespaces 'cljs.core] cljs.cache/core)
-    (swap! env assoc-in [::ana/namespaces 'cljs.core$macros] cljs.cache/core$macros)
-    env))
+(def cenv (let [e (env/default-compiler-env)
+                caches (js/eval (js/eval "CORE_CACHES"))] 
+                (doseq [[where cache] caches] 
+                  (swap! e assoc-in [::ana/namespaces where] cache))
+                e))
 
 (defn ^:export setup-cljs-user []
   (js/eval "goog.provide('cljs.user')")

@@ -534,24 +534,39 @@
   [env prefix suffix]
   (contains? '#{goog goog.object goog.string goog.array Math} prefix))
 
+(defn confirm-var-exist-warning [env prefix suffix]
+  (fn [env prefix suffix]
+    (warning :undeclared-var env {:prefix prefix :suffix suffix})))
+
+(defn loaded-ns?
+  #?(:cljs {:tag boolean})
+  [env prefix]
+  (if-not (nil? (gets @env/*compiler* ::namespaces prefix))
+    true
+    (let [ns (:ns env)]
+      (if-not (nil? (get (:requires ns) prefix))
+        true
+        (if-not (nil? (get (:imports ns) prefix))
+          true
+          false)))))
+
 (defn confirm-var-exists
   ([env prefix suffix]
-    (confirm-var-exists env prefix suffix
-      (fn [env prefix suffix]
-        (warning :undeclared-var env {:prefix prefix :suffix suffix}))))
+   (let [warn (confirm-var-exist-warning env prefix suffix)]
+     (confirm-var-exists env prefix suffix warn)))
   ([env prefix suffix missing-fn]
-    (let [sufstr (str suffix)
-          suffix (symbol
-                   ;; leave cljs.core$macros/.. alone
-                   (if (and (not= ".." sufstr) (re-find #"\." sufstr))
-                     (first (string/split sufstr #"\."))
-                     suffix))]
+    (let [sufstr     (str suffix)
+          suffix-str (if (and #?(:clj  (not= ".." sufstr)
+                                 :cljs (not (identical? ".." sufstr))) ;; leave cljs.core$macros/.. alone
+                              #?(:clj  (re-find #"\." sufstr)
+                                 :cljs ^boolean (.test #"\." sufstr)))
+                       (first (string/split sufstr #"\."))
+                       suffix)
+          suffix     (symbol suffix-str)]
       (when (and (not (implicit-import? env prefix suffix))
-                 (not (and (not (gets @env/*compiler* ::namespaces prefix))
-                           (or (get (:requires (:ns env)) prefix)
-                           (get (:imports (:ns env)) prefix))))
-                 (not (and (= prefix 'cljs.core) (= suffix 'unquote)))
-                 (not (gets @env/*compiler* ::namespaces prefix :defs suffix)))
+                 (not (loaded-ns? env prefix))
+                 (not (and (= 'cljs.core prefix) (= 'unquote suffix)))
+                 (nil? (gets @env/*compiler* ::namespaces prefix :defs suffix)))
         (missing-fn env prefix suffix)))))
 
 (defn confirm-var-exists-throw []
@@ -598,63 +613,70 @@
    warnings about unresolved vars."
   ([env sym] (resolve-var env sym nil))
   ([env sym confirm]
-     (if (= (namespace sym) "js")
+     (if #?(:clj  (= "js" (namespace sym))
+            :cljs (identical? "js" (namespace sym)))
        {:name sym :ns 'js}
-       (let [s (str sym)
-             lb (-> env :locals sym)]
+       (let [s    (str sym)
+             lcls (:locals env)
+             lb   (get lcls sym)]
          (cond
-           lb lb
+           (not (nil? lb)) lb
 
-           (namespace sym)
-           (let [ns (namespace sym)
-                 ns (if (= "clojure.core" ns) "cljs.core" ns)
+           (not (nil? (namespace sym)))
+           (let [ns      (namespace sym)
+                 ns      (if #?(:clj  (= "clojure.core" ns)
+                                :cljs (identical? "clojure.core" ns))
+                           "cljs.core"
+                           ns)
                  full-ns (resolve-ns-alias env ns)]
-             (when confirm
+             (when-not (nil? confirm)
                (when (not= (-> env :ns :name) full-ns)
                  (confirm-ns env full-ns))
                (confirm env full-ns (symbol (name sym))))
              (merge (gets @env/*compiler* ::namespaces full-ns :defs (symbol (name sym)))
-                    {:name (symbol (str full-ns) (str (name sym)))
-                     :ns full-ns}))
+               {:name (symbol (str full-ns) (str (name sym)))
+                :ns full-ns}))
 
            #?(:clj  (and (.contains s ".")
                          (not (.contains s "..")))
-              :cljs (and (goog.string/contains s ".")
-                         (not (goog.string/contains s ".."))))
-           (let [idx (.indexOf s ".")
+              :cljs (and ^boolean (goog.string/contains s ".")
+                         (not ^boolean (goog.string/contains s ".."))))
+           (let [idx    (.indexOf s ".")
                  prefix (symbol (subs s 0 idx))
                  suffix (subs s (inc idx))
-                 lb (-> env :locals prefix)]
-             (if lb
+                 lb     (get lcls prefix)]
+             (if-not (nil? lb)
                {:name (symbol (str (:name lb)) suffix)}
-               (let [cur-ns (-> env :ns :name)]
-                 (if-let [full-ns (gets @env/*compiler* ::namespaces cur-ns :imports prefix)]
+               (let [cur-ns  (-> env :ns :name)
+                     full-ns (gets @env/*compiler* ::namespaces cur-ns :imports prefix)]
+                 (if-not (nil? full-ns)
                    {:name (symbol (str full-ns) suffix)}
-                   (if-let [info (gets @env/*compiler* ::namespaces cur-ns :defs prefix)]
-                     (merge info
-                       {:name (symbol (str cur-ns) (str sym))
-                        :ns cur-ns})
-                     (merge (gets @env/*compiler* ::namespaces prefix :defs (symbol suffix))
-                       {:name (if (= "" prefix) (symbol suffix) (symbol (str prefix) suffix))
-                        :ns prefix}))))))
+                   (let [info (gets @env/*compiler* ::namespaces cur-ns :defs prefix)]
+                     (if-not (nil? info)
+                       (merge info
+                         {:name (symbol (str cur-ns) (str sym))
+                          :ns cur-ns})
+                       (merge (gets @env/*compiler* ::namespaces prefix :defs (symbol suffix))
+                         {:name (if (= "" prefix) (symbol suffix) (symbol (str prefix) suffix))
+                          :ns prefix})))))))
 
-           (gets @env/*compiler* ::namespaces (-> env :ns :name) :uses sym)
+           (not (nil? (gets @env/*compiler* ::namespaces (-> env :ns :name) :uses sym)))
            (let [full-ns (gets @env/*compiler* ::namespaces (-> env :ns :name) :uses sym)]
              (merge
-              (gets @env/*compiler* ::namespaces full-ns :defs sym)
-              {:name (symbol (str full-ns) (str sym))
-               :ns (-> env :ns :name)}))
+               (gets @env/*compiler* ::namespaces full-ns :defs sym)
+               {:name (symbol (str full-ns) (str sym))
+                :ns (-> env :ns :name)}))
 
-           (gets @env/*compiler* ::namespaces (-> env :ns :name) :imports sym)
+           (not (nil? (gets @env/*compiler* ::namespaces (-> env :ns :name) :imports sym)))
            (recur env (gets @env/*compiler* ::namespaces (-> env :ns :name) :imports sym) confirm)
 
            :else
            (let [cur-ns (-> env :ns :name)
                  full-ns (cond
-                           (gets @env/*compiler* ::namespaces cur-ns :defs sym) cur-ns
+                           (not (nil? (gets @env/*compiler* ::namespaces cur-ns :defs sym))) cur-ns
                            (core-name? env sym) 'cljs.core
                            :else cur-ns)]
-             (when confirm
+             (when-not (nil? confirm)
                (confirm env full-ns sym))
              (merge (gets @env/*compiler* ::namespaces full-ns :defs sym)
                {:name (symbol (str full-ns) (str sym))
@@ -840,28 +862,29 @@
   "Given env, an analysis environment, and e, an AST node, return the inferred
    type of the node"
   [env e]
-  (if-let [tag (get-tag e)]
-    tag
-    (case (:op e)
-      :recur    IGNORE_SYM
-      :throw    IGNORE_SYM
-      :let      (infer-tag env (:expr e))
-      :loop     (infer-tag env (:expr e))
-      :do       (infer-tag env (:ret e))
-      :method   (infer-tag env (:expr e))
-      :def      (infer-tag env (:init e))
-      :invoke   (infer-invoke env e)
-      :if       (infer-if env e)
-      :constant (case (:form e)
-                  true BOOLEAN_SYM
-                  false BOOLEAN_SYM
-                  ANY_SYM)
-      :var      (if (:init e)
-                  (infer-tag env (:init e))
-                  (infer-tag env (:info e)))
-      :dot      ANY_SYM
-      :js       ANY_SYM
-      nil)))
+  (let [tag (get-tag e)]
+    (if-not (nil? tag)
+      tag
+      (case (:op e)
+        :recur    IGNORE_SYM
+        :throw    IGNORE_SYM
+        :let      (infer-tag env (:expr e))
+        :loop     (infer-tag env (:expr e))
+        :do       (infer-tag env (:ret e))
+        :method   (infer-tag env (:expr e))
+        :def      (infer-tag env (:init e))
+        :invoke   (infer-invoke env e)
+        :if       (infer-if env e)
+        :constant (case (:form e)
+                    true BOOLEAN_SYM
+                    false BOOLEAN_SYM
+                    ANY_SYM)
+        :var      (if-not (nil? (:init e))
+                    (infer-tag env (:init e))
+                    (infer-tag env (:info e)))
+        :dot      ANY_SYM
+        :js       ANY_SYM
+        nil))))
 
 (defmulti parse (fn [op & rest] op))
 
@@ -1136,103 +1159,158 @@
         (when export-as {:export export-as})
         (when init-expr {:children [init-expr]})))))
 
+(defn analyze-fn-method-param [env]
+  (fn [[locals params] name]
+    (let [line   (get-line name env)
+          column (get-col name env)
+          nmeta  (meta name)
+          tag    (:tag nmeta)
+          shadow (when-not (nil? locals)
+                   (locals name))
+          env    (merge (select-keys env [:context])
+                   {:line line :column column})
+          param  {:op :var
+                  :name name
+                  :line line
+                  :column column
+                  :tag tag
+                  :shadow shadow
+                  ;; Give the fn params the same shape
+                  ;; as a :var, so it gets routed
+                  ;; correctly in the compiler
+                  :env env
+                  :info {:name name :shadow shadow}
+                  :binding-form? true}]
+     [(assoc locals name param) (conj params param)])))
+
+(defn analyze-fn-method-body [env form recur-frames]
+  (binding [*recur-frames* recur-frames]
+    (analyze env form)))
+
 (defn- analyze-fn-method [env locals form type]
-  (let [param-names (first form)
-        variadic (boolean (some '#{&} param-names))
-        param-names (vec (remove '#{&} param-names))
-        body (next form)
-        [locals params] (reduce (fn [[locals params] name]
-                                  (let [param {:name name
-                                               :line (get-line name env)
-                                               :column (get-col name env)
-                                               :tag (-> name meta :tag)
-                                               :shadow (when locals (locals name))
-                                               ;; Give the fn params the same shape
-                                               ;; as a :var, so it gets routed
-                                               ;; correctly in the compiler
-                                               :op :var
-                                               :env (merge (select-keys env [:context])
-                                                           {:line (get-line name env)
-                                                            :column (get-col name env)})
-                                               :info {:name name
-                                                      :shadow (when locals (locals name))}
-                                               :binding-form? true}]
-                                    [(assoc locals name param) (conj params param)]))
-                                [locals []] param-names)
-        fixed-arity (count (if variadic (butlast params) params))
-        recur-frame {:params params :flag (atom nil)}
-        expr (binding [*recur-frames* (cons recur-frame *recur-frames*)]
-               (analyze (assoc env :context :return :locals locals) `(do ~@body)))]
-    {:env env :variadic variadic :params params :max-fixed-arity fixed-arity
-     :type type :form form :recurs @(:flag recur-frame) :expr expr}))
+  (let [param-names     (first form)
+        variadic        (boolean (some '#{&} param-names))
+        param-names     (vec (remove '#{&} param-names))
+        body            (next form)
+        step            (analyze-fn-method-param env)
+        step-init       [locals []]
+        [locals params] (reduce step step-init param-names)
+        params'         (if (true? variadic)
+                          (butlast params)
+                          params)
+        fixed-arity     (count params')
+        recur-frame     {:params params :flag (atom nil)}
+        recur-frames    (cons recur-frame *recur-frames*)
+        body-env        (assoc env :context :return :locals locals)
+        body-form       `(do ~@body)
+        expr            (analyze-fn-method-body body-env body-form recur-frames)
+        recurs          @(:flag recur-frame)]
+    {:env env
+     :variadic variadic
+     :params params
+     :max-fixed-arity fixed-arity
+     :type type
+     :form form
+     :expr expr
+     :recurs recurs}))
 
 (declare analyze-wrap-meta)
 
+(defn fn-name-var [env locals name]
+  (when-not (nil? name)
+    (let [ns       (-> env :ns :name)
+          shadow   (get locals name)
+          shadow   (when (nil? shadow)
+                     (get-in env [:js-globals name]))
+          fn-scope (:fn-scope env)
+          name-var {:name name
+                    :info {:fn-self-name true
+                           :fn-scope fn-scope
+                           :ns ns
+                           :shadow shadow}}
+          tag      (-> name meta :tag)
+          ret-tag  (when-not (nil? tag)
+                     {:ret-tag tag})]
+      (merge name-var ret-tag))))
+
+(defn analyze-fn-methods-pass2* [menv locals type meths]
+  (doall (map #(analyze-fn-method menv locals % type) meths)))
+
+(defn analyze-fn-methods-pass2 [menv locals type meths]
+  (no-warn (analyze-fn-methods-pass2* menv locals type meths)))
+
 (defmethod parse 'fn*
   [op env [_ & args :as form] name _]
-  (analyze-wrap-meta
-   (let [[name meths] (if (symbol? (first args))
-                        [(first args) (next args)]
-                        [name (seq args)])
-         ;;turn (fn [] ...) into (fn ([]...))
-         meths (if (vector? (first meths)) (list meths) meths)
-         locals (:locals env)
-         name-var (if name
-                    (merge
-                      {:name name
-                       :info {:fn-self-name true
-                              :fn-scope (:fn-scope env)
-                              :ns (-> env :ns :name)
-                              :shadow (or (locals name)
-                                          (get-in env [:js-globals name]))}}
-                     (when-let [tag (-> name meta :tag)]
-                       {:ret-tag tag})))
-         env (if name
-               (update-in env [:fn-scope] conj name-var)
-               env)
-         locals (if (and locals name) (assoc locals name name-var) locals)
-         type (-> form meta ::type)
-         protocol-impl (-> form meta ::protocol-impl)
-         protocol-inline (-> form meta ::protocol-inline)
-         menv (if (> (count meths) 1) (assoc env :context :expr) env)
-         menv (merge menv
-                     {:protocol-impl protocol-impl
-                      :protocol-inline protocol-inline})
-         methods (map #(analyze-fn-method menv locals % type) meths)
-         max-fixed-arity (apply max (map :max-fixed-arity methods))
-         variadic (boolean (some :variadic methods))
-         locals (if name
-                  (update-in locals [name] assoc
-                             ;; TODO: can we simplify? - David
-                             :fn-var true
-                             :variadic variadic
-                             :max-fixed-arity max-fixed-arity
-                             :method-params (map :params methods))
-                  locals)
-         methods (if name
-                   ;; a second pass with knowledge of our function-ness/arity
-                   ;; lets us optimize self calls
-                   (no-warn (doall (map #(analyze-fn-method menv locals % type) meths)))
-                   methods)
-         form (vary-meta form dissoc ::protocol-impl ::protocol-inline ::type)]
-     (let [variadic-methods (filter :variadic methods)
-           variadic-params (count (:params (first variadic-methods)))
-           param-counts (map (comp count :params) methods)]
-       (when (< 1 (count variadic-methods))
-         (warning :multiple-variadic-overloads env {:name name-var}))
-       (when (not (or (zero? variadic-params) (= variadic-params (+ 1 max-fixed-arity))))
-         (warning :variadic-max-arity env {:name name-var}))
-       (when (not= (distinct param-counts) param-counts)
-         (warning :overload-arity env {:name name-var})))
-     {:env env
-      :op :fn :form form :name name-var :methods methods :variadic variadic
-      :tag 'function
-      :recur-frames *recur-frames* :loop-lets *loop-lets*
-      :jsdoc [(when variadic "@param {...*} var_args")]
-      :max-fixed-arity max-fixed-arity
-      :protocol-impl protocol-impl
-      :protocol-inline protocol-inline
-      :children (mapv :expr methods)})))
+  (let [[name meths] (if (symbol? (first args))
+                       [(first args) (next args)]
+                       [name (seq args)])
+        ;; turn (fn [] ...) into (fn ([]...))
+        meths        (if (vector? (first meths))
+                       (list meths)
+                       meths)
+        locals       (:locals env)
+        name-var     (fn-name-var env locals name)
+        env          (if-not (nil? name)
+                       (update-in env [:fn-scope] conj name-var)
+                       env)
+        locals       (if (and (not (nil? locals))
+                              (not (nil? name)))
+                       (assoc locals name name-var)
+                       locals)
+        form-meta    (meta form)
+        type         (::type form-meta)
+        proto-impl   (::protocol-impl form-meta)
+        proto-inline (::protocol-inline form-meta)
+        menv         (if (> (count meths) 1)
+                       (assoc env :context :expr)
+                       env)
+        menv         (merge menv
+                       {:protocol-impl proto-impl
+                        :protocol-inline proto-inline})
+        methods      (map #(analyze-fn-method menv locals % type) meths)
+        mfa          (apply max (map :max-fixed-arity methods))
+        variadic     (boolean (some :variadic methods))
+        locals       (if-not (nil? name)
+                       (update-in locals [name] assoc
+                         ;; TODO: can we simplify? - David
+                         :fn-var true
+                         :variadic variadic
+                         :max-fixed-arity mfa
+                         :method-params (map :params methods))
+                       locals)
+        methods      (if-not (nil? name)
+                       ;; a second pass with knowledge of our function-ness/arity
+                       ;; lets us optimize self calls
+                       (analyze-fn-methods-pass2 menv locals type meths)
+                       methods)
+        form         (vary-meta form dissoc ::protocol-impl ::protocol-inline ::type)
+        js-doc       (when (true? variadic)
+                       "@param {...*} var_args")
+        children     (mapv :expr methods)
+        ast          {:op :fn
+                      :env env
+                      :form form
+                      :name name-var
+                      :methods methods
+                      :variadic variadic
+                      :tag 'function
+                      :recur-frames *recur-frames*
+                      :loop-lets *loop-lets*
+                      :jsdoc [js-doc]
+                      :max-fixed-arity mfa
+                      :protocol-impl proto-impl
+                      :protocol-inline proto-inline
+                      :children children}]
+    (let [variadic-methods (filter :variadic methods)
+          variadic-params  (count (:params (first variadic-methods)))
+          param-counts     (map (comp count :params) methods)]
+      (when (< 1 (count variadic-methods))
+        (warning :multiple-variadic-overloads env {:name name-var}))
+      (when (not (or (zero? variadic-params) (== variadic-params (+ 1 mfa))))
+        (warning :variadic-max-arity env {:name name-var}))
+      (when (not= (distinct param-counts) param-counts)
+        (warning :overload-arity env {:name name-var})))
+    (analyze-wrap-meta ast)))
 
 (defmethod parse 'letfn*
   [op env [_ bindings & exprs :as form] name _]
@@ -1278,74 +1356,123 @@
     {:env env :op :letfn :bindings bes :expr expr :form form
      :children (conj (vec (map :init bes)) expr)}))
 
+(defn analyze-do-statements* [env exprs]
+  (seq (map #(analyze (assoc env :context :statement) %) (butlast exprs))))
+
+(defn analyze-do-statements [env exprs]
+  (disallowing-recur (analyze-do-statements* env exprs)))
+
 (defmethod parse 'do
   [op env [_ & exprs :as form] _ _]
-  (let [statements (disallowing-recur
-                     (seq (map #(analyze (assoc env :context :statement) %) (butlast exprs))))
-        ret (if (<= (count exprs) 1)
-              (analyze env (first exprs))
-              (analyze (assoc env :context (if (= :statement (:context env)) :statement :return)) (last exprs)))]
-    {:env env :op :do :form form
-     :statements statements :ret ret
-     :children (conj (vec statements) ret)}))
+  (let [statements (analyze-do-statements env exprs)]
+    (if (<= (count exprs) 1)
+      (let [ret      (analyze env (first exprs))
+            children (conj (vec statements) ret)]
+        {:op :do
+         :env env
+         :form form
+         :statements statements :ret ret
+         :children children})
+      (let [ret-env  (if (= :statement (:context env))
+                       (assoc env :context :statement)
+                       (assoc env :context :return))
+            ret      (analyze ret-env (last exprs))
+            children (conj (vec statements) ret)]
+        {:op :do
+         :env env
+         :form form
+         :statements statements
+         :ret ret
+         :children children}))))
+
+(defn analyze-let-binding-init [env init loop-lets]
+  (binding [*loop-lets* loop-lets]
+    (analyze env init)))
+
+(defn get-let-tag [name init-expr]
+  (let [tag (-> name meta :tag)]
+    (if-not (nil? tag)
+      tag
+      (let [tag (-> init-expr :tag)]
+        (if-not (nil? tag)
+          tag
+          (-> init-expr :info :tag))))))
+
+(defn analyze-let-bindings* [encl-env bindings]
+  (loop [bes []
+         env (assoc encl-env :context :expr)
+         bindings (seq (partition 2 bindings))]
+    (let [binding (first bindings)]
+      (if-not (nil? binding)
+        (let [[name init] binding]
+          (when (or (not (nil? (namespace name)))
+                  #?(:clj  (.contains (str name) ".")
+                     :cljs ^boolean (goog.string/contains (str name) ".")))
+            (throw (error encl-env (str "Invalid local name: " name))))
+          (let [init-expr (analyze-let-binding-init env init (cons {:params bes} *loop-lets*))
+                line (get-line name env)
+                col (get-col name env)
+                be {:name name
+                    :line line
+                    :column col
+                    :init init-expr
+                    :tag (get-let-tag name init-expr)
+                    :local true
+                    :shadow (-> env :locals name)
+                    ;; Give let* bindings same shape as var so
+                    ;; they get routed correctly in the compiler
+                    :op :var
+                    :env {:line line :column col}
+                    :info {:name name
+                           :shadow (-> env :locals name)}
+                    :binding-form? true}
+                be (if (= :fn (:op init-expr))
+                     ;; TODO: can we simplify - David
+                     (merge be
+                       {:fn-var true
+                        :variadic (:variadic init-expr)
+                        :max-fixed-arity (:max-fixed-arity init-expr)
+                        :method-params (map :params (:methods init-expr))})
+                     be)]
+            (recur (conj bes be)
+              (assoc-in env [:locals name] be)
+              (next bindings))))
+        [bes env]))))
+
+(defn analyze-let-bindings [encl-env bindings]
+  (disallowing-recur (analyze-let-bindings* encl-env bindings)))
+
+(defn analyze-let-body* [env context exprs]
+  (analyze (assoc env :context (if (= :expr context) :return context)) `(do ~@exprs)))
+
+(defn analyze-let-body [env context exprs recur-frames loop-lets]
+  (binding [*recur-frames* recur-frames
+            *loop-lets* loop-lets]
+    (analyze-let-body* env context exprs)))
 
 (defn analyze-let
   [encl-env [_ bindings & exprs :as form] is-loop]
   (when-not (and (vector? bindings) (even? (count bindings))) 
     (throw (error encl-env "bindings must be vector of even number of elements")))
-  (let [context (:context encl-env)
-        [bes env]
-        (disallowing-recur
-         (loop [bes []
-                env (assoc encl-env :context :expr)
-                bindings (seq (partition 2 bindings))]
-           (if-let [[name init] (first bindings)]
-             (do
-               (when (or (namespace name)
-                         #?(:clj  (.contains (str name) ".")
-                            :cljs (goog.string/contains (str name) ".")))
-                 (throw (error encl-env (str "Invalid local name: " name))))
-               (let [init-expr (binding [*loop-lets* (cons {:params bes} *loop-lets*)]
-                                 (analyze env init))
-                     be {:name name
-                         :line (get-line name env)
-                         :column (get-col name env)
-                         :init init-expr
-                         :tag (or (-> name meta :tag)
-                                  (-> init-expr :tag)
-                                  (-> init-expr :info :tag))
-                         :local true
-                         :shadow (-> env :locals name)
-                         ;; Give let* bindings same shape as var so
-                         ;; they get routed correctly in the compiler
-                         :op :var
-                         :env {:line (get-line name env)
-                               :column (get-col name env)}
-                         :info {:name name
-                                :shadow (-> env :locals name)}
-                         :binding-form? true}
-                     be (if (= (:op init-expr) :fn)
-                          ;; TODO: can we simplify - David
-                          (merge be
-                            {:fn-var true
-                             :variadic (:variadic init-expr)
-                             :max-fixed-arity (:max-fixed-arity init-expr)
-                             :method-params (map :params (:methods init-expr))})
-                          be)]
-                 (recur (conj bes be)
-                        (assoc-in env [:locals name] be)
-                        (next bindings))))
-             [bes env])))
-        recur-frame (when is-loop {:params bes :flag (atom nil)})
-        expr
-        (binding [*recur-frames* (if recur-frame (cons recur-frame *recur-frames*) *recur-frames*)
-                  *loop-lets* (cond
-                                is-loop *loop-lets*
-                                *loop-lets* (cons {:params bes} *loop-lets*))]
-          (analyze (assoc env :context (if (= :expr context) :return context)) `(do ~@exprs)))]
-    {:env encl-env :op (if is-loop :loop :let)
-     :bindings bes :expr expr :form form
-     :children (conj (vec (map :init bes)) expr)}))
+  (let [context      (:context encl-env)
+        [bes env]    (analyze-let-bindings encl-env bindings)
+        recur-frame  (when (true? is-loop)
+                       {:params bes :flag (atom nil)})
+        recur-frames (if recur-frame
+                       (cons recur-frame *recur-frames*)
+                       *recur-frames*)
+        loop-lets    (cond
+                       (true? is-loop) *loop-lets*
+                       (not (nil? *loop-lets*)) (cons {:params bes} *loop-lets*))
+        expr         (analyze-let-body env context exprs recur-frames loop-lets)
+        op           (if (true? is-loop) :loop :let)
+        children     (conj (vec (map :init bes)) expr)]
+    {:op op
+     :env encl-env
+     :bindings bes
+     :expr expr
+     :form form
+     :children children}))
 
 (defmethod parse 'let*
   [op encl-env form _ _]
@@ -1919,84 +2046,132 @@
                  (list* '. dot-form) " with classification "
                  (classify-dot-form dot-form))))))
 
+(defn analyze-dot [env target field member+ form]
+  (let [v [target field member+]
+        {:keys [dot-action target method field args]} (build-dot-form v)
+        enve       (assoc env :context :expr)
+        targetexpr (analyze enve target)
+        form-meta  (meta form)
+        tag        (:tag form-meta)]
+    (case dot-action
+      ::access (let [children [targetexpr]]
+                 {:op :dot
+                  :env env
+                  :form form
+                  :target targetexpr
+                  :field field
+                  :children children
+                  :tag tag})
+      ::call   (let [argexprs (map #(analyze enve %) args)
+                     children (into [targetexpr] argexprs)]
+                 {:op :dot
+                  :env env
+                  :form form
+                  :target targetexpr
+                  :method method
+                  :args argexprs
+                  :children children
+                  :tag tag}))))
+
 (defmethod parse '.
   [_ env [_ target & [field & member+] :as form] _ _]
-  (disallowing-recur
-   (let [{:keys [dot-action target method field args]} (build-dot-form [target field member+])
-         enve        (assoc env :context :expr)
-         targetexpr  (analyze enve target)]
-     (case dot-action
-           ::access {:env env :op :dot :form form
-                     :target targetexpr
-                     :field field
-                     :children [targetexpr]
-                     :tag (-> form meta :tag)}
-           ::call   (let [argexprs (map #(analyze enve %) args)]
-                      {:env env :op :dot :form form
-                       :target targetexpr
-                       :method method
-                       :args argexprs
-                       :children (into [targetexpr] argexprs)
-                       :tag (-> form meta :tag)})))))
+  (disallowing-recur (analyze-dot env target field member+ form)))
+
+(defn get-js-tag [form]
+  (let [form-meta (meta form)
+        tag       (:tag form-meta)]
+    (if-not (nil? tag)
+      tag
+      (when (true? (:numeric form-meta))
+        'number))))
+
+(defn js-star-interp
+  [env ^String s]
+  (let [idx (.indexOf s "~{")]
+    (if (== -1 idx)
+      (list s)
+      (let [end (.indexOf s "}" idx)
+            inner (:name (resolve-existing-var env (symbol (subs s (+ 2 idx) end))))]
+        (lazy-seq
+          (cons (subs s 0 idx)
+            (cons inner
+              (js-star-interp env (subs s (inc end))))))))))
+
+(defn js-star-seg
+  [^String s]
+  (let [idx (.indexOf s "~{")]
+    (if (== -1 idx)
+      (list s)
+      (let [end (.indexOf s "}" idx)]
+        (lazy-seq
+          (cons (subs s 0 idx)
+            (js-star-seg (subs s (inc end)))))))))
+
+(def NUMERIC_SET '#{any number long double})
+
+(defn numeric-type?
+  #?(:cljs {:tag boolean})
+  [t]
+  ;; TODO: type inference is not strong enough to detect that
+  ;; when functions like first won't return nil, so variadic
+  ;; numeric functions like cljs.core/< would produce a spurious
+  ;; warning without this - David
+  (if (nil? t)
+    true
+    (if (and (symbol? t) (not (nil? (get NUMERIC_SET t))))
+      true
+      (when #?(:clj  (set? t)
+               :cljs (cljs-set? t))
+        (or (contains? t 'number)
+            (contains? t 'long)
+            (contains? t 'double)
+            (contains? t 'any))))))
+
+(defn analyze-js-star* [env jsform args form]
+  (let [enve      (assoc env :context :expr)
+        argexprs  (vec (map #(analyze enve %) args))
+        form-meta (meta form)
+        segs      (js-star-seg jsform)
+        tag       (get-js-tag form)
+        js-op     (:js-op form-meta)
+        numeric   (:numeric form-meta)]
+    (when (true? numeric)
+      (let [types (map #(infer-tag env %) argexprs)]
+        (when-not (every? numeric-type? types)
+          (warning :invalid-arithmetic env
+            {:js-op js-op
+             :types (into [] types)}))))
+    {:op :js
+     :env env
+     :segs segs
+     :args argexprs
+     :tag tag
+     :form form
+     :children argexprs
+     :js-op js-op
+     :numeric numeric}))
+
+(defn analyze-js-star [env jsform args form]
+  (disallowing-recur (analyze-js-star* env jsform args form)))
 
 (defmethod parse 'js*
   [op env [_ jsform & args :as form] _ _]
   (when-not (string? jsform)
     (throw (error env "Invalid js* form")))
-  (if args
-    (disallowing-recur
-     (let [seg (fn seg [^String s]
-                 (let [idx (.indexOf s "~{")]
-                   (if (= -1 idx)
-                     (list s)
-                     (let [end (.indexOf s "}" idx)]
-                       (lazy-seq
-                         (cons (subs s 0 idx)
-                           (seg (subs s (inc end)))))))))
-           enve (assoc env :context :expr)
-           argexprs (vec (map #(analyze enve %) args))]
-       (when (-> form meta :numeric)
-         (let [types (map #(infer-tag env %) argexprs)]
-           (when-not (every?
-                       (fn [t]
-                         (or (nil? t)
-                             (and (symbol? t) ('#{any number long double} t))
-                             ;; TODO: type inference is not strong enough to detect that
-                             ;; when functions like first won't return nil, so variadic
-                             ;; numeric functions like cljs.core/< would produce a spurious
-                             ;; warning without this - David
-                             (and (set? t)
-                                  (or (contains? t 'number)
-                                      (contains? t 'long)
-                                      (contains? t 'double)
-                                      (contains? t 'any)))))
-                       types)
-             (warning :invalid-arithmetic env
-               {:js-op (-> form meta :js-op)
-                :types (into [] types)}))))
-       {:env env :op :js :segs (seg jsform) :args argexprs
-        :tag (or (-> form meta :tag)
-                 (and (-> form meta :numeric) 'number)
-                 nil)
-        :form form :children argexprs
-        :js-op (-> form meta :js-op)
-        :numeric (-> form meta :numeric)}))
-    (let [interp (fn interp [^String s]
-                   (let [idx (.indexOf s "~{")]
-                     (if (= -1 idx)
-                       (list s)
-                       (let [end (.indexOf s "}" idx)
-                             inner (:name (resolve-existing-var env (symbol (subs s (+ 2 idx) end))))]
-                         (lazy-seq
-                           (cons (subs s 0 idx)
-                             (cons inner
-                               (interp (subs s (inc end))))))))))]
-      {:env env :op :js :form form :code (apply str (interp jsform))
-       :tag (or (-> form meta :tag)
-                (and (-> form meta :numeric) 'number)
-                nil)
-       :js-op (-> form meta :js-op)
-       :numeric (-> form meta :numeric)})))
+  (if-not (nil? args)
+    (analyze-js-star env jsform args form)
+    (let [code      (apply str (js-star-interp env jsform))
+          tag       (get-js-tag form)
+          form-meta (meta form)
+          js-op     (:js-op form-meta)
+          numeric   (:numeric form-meta)]
+      {:op :js
+       :env env
+       :form form
+       :code code
+       :tag tag
+       :js-op js-op
+       :numeric numeric})))
 
 (defn- analyzed?
   #?(:cljs {:tag boolean})
@@ -2053,22 +2228,28 @@
 (defn analyze-symbol
   "Finds the var associated with sym"
   [env sym]
-  (if (:quoted? env)
+  (if ^boolean (:quoted? env)
     {:op :constant :env env :form sym :tag 'cljs.core/Symbol}
     (let [{:keys [line column]} (meta sym)
-          env (cond-> env
-                line (assoc :line line)
-                column (assoc :column column))
-          ret {:env env :form sym}
-          lb (-> env :locals sym)]
-      (if lb
+          env  (if-not (nil? line)
+                 (assoc env :line line)
+                 env)
+          env  (if-not (nil? column)
+                 (assoc env :column column)
+                 env)
+          ret  {:env env :form sym}
+          lcls (:locals env)
+          lb   (get lcls sym)]
+      (if-not (nil? lb)
         (assoc ret :op :var :info lb)
-        (if-not (:def-var env)
-          (assoc ret :op :var :info
-            (if-not (contains? (meta sym) ::analyzed)
-              (resolve-existing-var env sym)
-              (resolve-var env sym)))
-          (assoc ret :op :var :info (resolve-var env sym)))))))
+        (if-not (true? (:def-var env))
+          (let [sym-meta (meta sym)
+                info     (if-not (contains? sym-meta ::analyzed)
+                           (resolve-existing-var env sym)
+                           (resolve-var env sym))]
+            (assoc ret :op :var :info info))
+          (let [info (resolve-var env sym)]
+            (assoc ret :op :var :info info)))))))
 
 (defn excluded?
   #?(:cljs {:tag boolean})
@@ -2135,10 +2316,16 @@
               (if #?(:clj (seq? form') :cljs (cljs-seq? form'))
                 (let [sym' (first form')
                       sym  (first form)]
-                  (if #?(:clj (= sym' 'js*) :cljs (symbol-identical? sym' JS_STAR_SYM))
-                    (vary-meta form' merge
-                      (cond-> {:js-op (if (namespace sym) sym (symbol "cljs.core" (str sym)))}
-                        (-> mac-var meta ::numeric) (assoc :numeric true)))
+                  (if #?(:clj  (= sym' 'js*)
+                         :cljs (symbol-identical? sym' JS_STAR_SYM))
+                    (let [sym   (if (namespace sym)
+                                  sym
+                                  (symbol "cljs.core" (str sym)))
+                          js-op {:js-op sym}
+                          js-op (if (true? (-> mac-var meta ::numeric))
+                                  (assoc js-op :numeric true)
+                                  js-op)]
+                      (vary-meta form' merge js-op))
                     form'))
                 form')))
           (if (symbol? op)

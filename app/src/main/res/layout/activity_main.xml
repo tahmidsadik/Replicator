@@ -23,22 +23,14 @@
         android:hint="user=>"/>
 
 
-    <ScrollView
+    <ListView
+        android:id="@+id/repl_space"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_above="@id/eval_btn"
-        android:fillViewport="true">
-        <LinearLayout
-            android:id="@+id/repl_space"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp">
-
-        </LinearLayout>
-
-    </ScrollView>
-
+        android:layout_marginLeft="12dp"
+        android:layout_marginRight="12dp"
+        android:stackFromBottom="true"
+        android:transcriptMode="normal"
+        android:layout_above="@id/eval_btn"/>
 
 </RelativeLayout>
