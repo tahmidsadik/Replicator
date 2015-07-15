@@ -128,6 +128,7 @@ public class JSEvaluator {
     @SuppressWarnings("unused")
     public Object replicatorImport(String src) {
         Context context = Context.enter();
+        context.setOptimizationLevel(-1);
         try {
             return evalJs(context, replicatorImportStream(src));
         } catch (Exception e) {
