@@ -3,6 +3,7 @@ package com.tasora.replicator;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -64,6 +65,17 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(com.tasora.replicator.R.layout.activity_main);
         code_et = (EditText) findViewById(com.tasora.replicator.R.id.input);
+        code_et.setOnKeyListener(new View.OnKeyListener() {
+            @Override
+            public boolean onKey(View v, int keyCode, KeyEvent event) {
+                if (event.getAction() == KeyEvent.ACTION_DOWN
+                        && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                    calljs(code_et);
+                    return true;
+                }
+                return false;
+            }
+        });
         ListView repl_space = (ListView) findViewById(com.tasora.replicator.R.id.repl_space);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         repl_space.setAdapter(adapter);
