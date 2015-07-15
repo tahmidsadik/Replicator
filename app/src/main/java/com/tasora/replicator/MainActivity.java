@@ -2,13 +2,12 @@ package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.ListView;
 import android.widget.ViewSwitcher;
 
 import com.squareup.otto.Subscribe;
@@ -76,7 +75,7 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
 
     @Override
     public void updateUi(String msg) {
-        if(!msg.equals("\n")) {
+        if (!TextUtils.isEmpty(msg)) {
             replHistory.push(msg);
             input.setText("");
         }
