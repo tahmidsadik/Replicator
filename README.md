@@ -8,6 +8,7 @@ Just Open the project in Android Studio and run the app on a device or simulator
 
 ##Contributing
 Pull requests are welcome!
+Currently I need help with getting JSCore to work with Android.
 
 ##Thanks
 [Mike Fikes](https://github.com/mfikes) for guiding me and helping me.
