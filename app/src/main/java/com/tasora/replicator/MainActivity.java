@@ -28,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
         TextView result = new TextView(this);
         result.setText(msg);
         repl_space.addView(result);
+        code_et.setText("");
     }
 
     public static Object evalJs(String src) {
