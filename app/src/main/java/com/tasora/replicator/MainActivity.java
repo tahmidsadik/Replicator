@@ -2,11 +2,15 @@ package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ListAdapter;
+import android.widget.ListView;
 import android.widget.TextView;
 
 import org.mozilla.javascript.Context;
@@ -16,18 +20,19 @@ import org.mozilla.javascript.ScriptableObject;
 import static com.tasora.replicator.Util.convertStreamToString;
 
 public class MainActivity extends AppCompatActivity {
+
     public static Context rhino_context;
     public static Scriptable rhino_scope;
     public String goog_base_source;
     public String deps_source;
     public String macros_source;
     public EditText code_et;
-    public LinearLayout repl_space;
 
+    private ArrayAdapter<String> adapter;
+
+    @SuppressWarnings("unused")
     public void updateUi(String msg) {
-        TextView result = new TextView(this);
-        result.setText(msg);
-        repl_space.addView(result);
+        adapter.add(msg);
         code_et.setText("");
     }
 
@@ -59,7 +64,9 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(com.tasora.replicator.R.layout.activity_main);
         code_et = (EditText) findViewById(com.tasora.replicator.R.id.input);
-        repl_space = (LinearLayout) findViewById(com.tasora.replicator.R.id.repl_space);
+        ListView repl_space = (ListView) findViewById(com.tasora.replicator.R.id.repl_space);
+        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
+        repl_space.setAdapter(adapter);
 
         //setting up js context
         setUpRhino();
