@@ -20,7 +20,7 @@ public class Util {
     public static final String REPLICATOR_IMPORT = "var REPLICATOR_IMPORT = com.tasora.replicator.Util.importReplicator;" +
             "var CLOSURE_IMPORT_SCRIPT = function(src) {" +
             "if (src === 'undefined' || src === undefined) {return true;}" +
-            "com.tasora.replicator.MainActivity.evalJs( String(REPLICATOR_IMPORT(src, javaContext))); return true};";
+            "com.tasora.replicator.JSEvaluator.evalJs( String(REPLICATOR_IMPORT(src, javaContext))); return true};";
 
     public static final String TRACK_LOADED_LIBS_SOURCE = "cljs.core._STAR_loaded_libs_STAR_ = cljs.core.into.call(null, cljs.core.PersistentHashSet.EMPTY, [\"cljs.core\"]);\n" +
             "goog.require = function (name, reload) {\n" +

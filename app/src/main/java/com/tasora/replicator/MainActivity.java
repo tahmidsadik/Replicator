@@ -22,12 +22,8 @@ import static com.tasora.replicator.Util.convertStreamToString;
 
 public class MainActivity extends AppCompatActivity {
 
-    public static Context rhino_context;
-    public static Scriptable rhino_scope;
-    public String goog_base_source;
-    public String deps_source;
-    public String macros_source;
-    public EditText code_et;
+    private JSEvaluator evaluator = new JSEvaluator();
+    private EditText code_et;
 
     private ArrayAdapter<String> adapter;
 
@@ -35,29 +31,6 @@ public class MainActivity extends AppCompatActivity {
     public void updateUi(String msg) {
         adapter.add(msg);
         code_et.setText("");
-    }
-
-    public static Object evalJs(String src) {
-        return rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
-    }
-
-    public void setUpRhino() {
-        rhino_context = Context.enter();
-        rhino_context.setOptimizationLevel(-1);
-        rhino_scope = rhino_context.initStandardObjects();
-        ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(this, rhino_scope));
-    }
-
-    public void setUpConsoleLog() {
-        evalJs(Util.REPLICATOR_LOG);
-    }
-
-    public void setUpGlobalContext() {
-        evalJs(Util.GLOBAL_CTX);
-    }
-
-    public void setUpImportClosureScript() {
-        evalJs(Util.REPLICATOR_IMPORT);
     }
 
     @Override
@@ -80,33 +53,7 @@ public class MainActivity extends AppCompatActivity {
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         repl_space.setAdapter(adapter);
 
-        //setting up js context
-        setUpRhino();
-        setUpConsoleLog();
-        setUpGlobalContext();
-        setUpImportClosureScript();
-
-        //Reading cljs source and converting them to string so that we can eval them from Rhino
-        try {
-            goog_base_source = convertStreamToString(getAssets().open("out/goog/base.js"));
-            deps_source = convertStreamToString(getAssets().open("out/deps.js"));
-            macros_source = convertStreamToString(getAssets().open("out/cljs/core$macros.js"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-
-        // Should do this in a background thread.
-        evalJs(goog_base_source);
-        evalJs(deps_source);
-        evalJs("goog.isProvided_ = function(x) { return false; };");
-        evalJs("goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
-        evalJs("goog.require('cljs.core');");
-        evalJs(Util.TRACK_LOADED_LIBS_SOURCE);
-        evalJs(Util.PRINT_FN_SOURCE);
-        evalJs(macros_source);
-        evalJs("goog.require('replete.core');");
-        evalJs("goog.provide('cljs.user')");
-        evalJs("goog.require('cljs.core')");
+        evaluator.init(this);
     }
 
     @Override
@@ -129,10 +76,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void calljs(View view) {
-        rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
-        evalJs("var window = global;");
-
-        String code = code_et.getText().toString();
-        Object res = evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
+        evaluator.callJs(code_et.getText().toString());
     }
 }

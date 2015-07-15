@@ -1,0 +1,81 @@
+package com.tasora.replicator;
+
+
+import android.app.Activity;
+
+import org.mozilla.javascript.Context;
+import org.mozilla.javascript.Scriptable;
+import org.mozilla.javascript.ScriptableObject;
+
+import static com.tasora.replicator.Util.convertStreamToString;
+
+public class JSEvaluator {
+    public static Context rhino_context;
+    public static Scriptable rhino_scope;
+    public String goog_base_source;
+    public String deps_source;
+    public String macros_source;
+
+    public static Object evalJs(String src) {
+        return rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
+    }
+
+    public void init(Activity activity) {
+        //setting up js context
+        setUpRhino(activity);
+        setUpConsoleLog();
+        setUpGlobalContext();
+        setUpImportClosureScript();
+
+        setUpRepl(activity);
+    }
+
+    public void setUpRhino(Activity activity) {
+        rhino_context = Context.enter();
+        rhino_context.setOptimizationLevel(-1);
+        rhino_scope = rhino_context.initStandardObjects();
+        ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(activity, rhino_scope));
+    }
+
+    public void setUpConsoleLog() {
+        evalJs(Util.REPLICATOR_LOG);
+    }
+
+    public void setUpGlobalContext() {
+        evalJs(Util.GLOBAL_CTX);
+    }
+
+    public void setUpImportClosureScript() {
+        evalJs(Util.REPLICATOR_IMPORT);
+    }
+
+    public void setUpRepl(Activity activity) {
+        //Reading cljs source and converting them to string so that we can eval them from Rhino
+        try {
+            goog_base_source = convertStreamToString(activity.getAssets().open("out/goog/base.js"));
+            deps_source = convertStreamToString(activity.getAssets().open("out/deps.js"));
+            macros_source = convertStreamToString(activity.getAssets().open("out/cljs/core$macros.js"));
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Should do this in a background thread.
+        evalJs(goog_base_source);
+        evalJs(deps_source);
+        evalJs("goog.isProvided_ = function(x) { return false; };");
+        evalJs("goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
+        evalJs("goog.require('cljs.core');");
+        evalJs(Util.TRACK_LOADED_LIBS_SOURCE);
+        evalJs(Util.PRINT_FN_SOURCE);
+        evalJs(macros_source);
+        evalJs("goog.require('replete.core');");
+        evalJs("goog.provide('cljs.user')");
+        evalJs("goog.require('cljs.core')");
+    }
+
+    public void callJs(String code) {
+        rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
+        evalJs("var window = global;");
+        Object res = evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
+    }
+}
