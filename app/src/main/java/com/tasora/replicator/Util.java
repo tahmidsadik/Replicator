@@ -11,16 +11,16 @@ public class Util {
             "android.util.Log.d('RHINO: ', msg); };" +
             "var print = function(str_arg) {" +
             "android.util.Log.d('Replicator: ', str_arg);" +
-            "javaContext.updateUi(str_arg); };";
+            "javaContext.replicatorLog(str_arg); };";
 
     public static final String PRINT_FN_SOURCE = "cljs.core.set_print_fn_BANG_.call(null,print);";
 
     public static final String GLOBAL_CTX = "var global = this;";
 
-    public static final String REPLICATOR_IMPORT = "var REPLICATOR_IMPORT = com.tasora.replicator.Util.importReplicator;" +
+    public static final String REPLICATOR_IMPORT =
             "var CLOSURE_IMPORT_SCRIPT = function(src) {" +
             "if (src === 'undefined' || src === undefined) {return true;}" +
-            "com.tasora.replicator.MainActivity.evalJs( String(REPLICATOR_IMPORT(src, javaContext))); return true};";
+            "javaContext.replicatorImport(src); return true;}";
 
     public static final String TRACK_LOADED_LIBS_SOURCE = "cljs.core._STAR_loaded_libs_STAR_ = cljs.core.into.call(null, cljs.core.PersistentHashSet.EMPTY, [\"cljs.core\"]);\n" +
             "goog.require = function (name, reload) {\n" +
@@ -47,39 +47,5 @@ public class Util {
         }
         reader.close();
         return sb.toString();
-    }
-
-    public static String importReplicator(String src, Activity a) throws Exception {
-        String valid_path = "out/";
-        if(src.startsWith("..")) {
-            String[] import_path_arr = src.split("/");
-            for (int i = 1; i < import_path_arr.length; i++) {
-                valid_path += import_path_arr[i];
-                if (i != import_path_arr.length - 1) {
-                    valid_path += "/";
-                }
-            }
-        } else if(src.startsWith("goog")) {
-            String[] import_path_arr = src.split("/");
-            for (int i = 0; i < import_path_arr.length; i++) {
-                valid_path += import_path_arr[i];
-                if (i != import_path_arr.length - 1) {
-                    valid_path += "/";
-                }
-            }
-        } else if(src.startsWith("cljs")) {
-            String[] import_path_arr = src.split("/");
-            for (int i = 0; i < import_path_arr.length; i++) {
-                valid_path += import_path_arr[i];
-                if (i != import_path_arr.length - 1) {
-                    valid_path += "/";
-                }
-            }
-        }
-        else {
-            valid_path = "out/goog/" +src;
-        }
-        Log.d("Src path:", src);
-        return convertStreamToString(a.getAssets().open(valid_path));
     }
 }

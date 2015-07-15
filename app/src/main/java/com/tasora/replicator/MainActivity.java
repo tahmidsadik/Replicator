@@ -2,111 +2,65 @@ package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ListAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
-import org.mozilla.javascript.Context;
-import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.ScriptableObject;
+import com.squareup.otto.Subscribe;
 
-import static com.tasora.replicator.Util.convertStreamToString;
+public class MainActivity extends AppCompatActivity implements JSEvaluator.Listener {
 
-public class MainActivity extends AppCompatActivity {
-
-    public static Context rhino_context;
-    public static Scriptable rhino_scope;
-    public String goog_base_source;
-    public String deps_source;
-    public String macros_source;
-    public EditText code_et;
+    private EditText code_et;
+    private ViewSwitcher switcher;
 
     private ArrayAdapter<String> adapter;
-
-    @SuppressWarnings("unused")
-    public void updateUi(String msg) {
-        adapter.add(msg);
-        code_et.setText("");
-    }
-
-    public static Object evalJs(String src) {
-        return rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
-    }
-
-    public void setUpRhino() {
-        rhino_context = Context.enter();
-        rhino_context.setOptimizationLevel(-1);
-        rhino_scope = rhino_context.initStandardObjects();
-        ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(this, rhino_scope));
-    }
-
-    public void setUpConsoleLog() {
-        evalJs(Util.REPLICATOR_LOG);
-    }
-
-    public void setUpGlobalContext() {
-        evalJs(Util.GLOBAL_CTX);
-    }
-
-    public void setUpImportClosureScript() {
-        evalJs(Util.REPLICATOR_IMPORT);
-    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.tasora.replicator.R.layout.activity_main);
-        code_et = (EditText) findViewById(com.tasora.replicator.R.id.input);
+        setContentView(R.layout.activity_main);
+        code_et = (EditText) findViewById(R.id.input);
         code_et.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_DOWN
                         && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    calljs(code_et);
+                    onClick(code_et);
                     return true;
                 }
                 return false;
             }
         });
+        switcher = (ViewSwitcher) findViewById(R.id.switcher);
         ListView repl_space = (ListView) findViewById(com.tasora.replicator.R.id.repl_space);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         repl_space.setAdapter(adapter);
 
-        //setting up js context
-        setUpRhino();
-        setUpConsoleLog();
-        setUpGlobalContext();
-        setUpImportClosureScript();
+//        switcher.showNext();
+    }
 
-        //Reading cljs source and converting them to string so that we can eval them from Rhino
-        try {
-            goog_base_source = convertStreamToString(getAssets().open("out/goog/base.js"));
-            deps_source = convertStreamToString(getAssets().open("out/deps.js"));
-            macros_source = convertStreamToString(getAssets().open("out/cljs/core$macros.js"));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
+    @Override
+    protected void onResume() {
+        super.onResume();
+        App.get(this).evaluator().setListener(this);
+        App.get(this).bus().register(this);
+    }
 
-        // Should do this in a background thread.
-        evalJs(goog_base_source);
-        evalJs(deps_source);
-        evalJs("goog.isProvided_ = function(x) { return false; };");
-        evalJs("goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
-        evalJs("goog.require('cljs.core');");
-        evalJs(Util.TRACK_LOADED_LIBS_SOURCE);
-        evalJs(Util.PRINT_FN_SOURCE);
-        evalJs(macros_source);
-        evalJs("goog.require('replete.core');");
-        evalJs("goog.provide('cljs.user')");
-        evalJs("goog.require('cljs.core')");
+    @Override
+    protected void onPause() {
+        App.get(this).evaluator().unsetListener();
+        App.get(this).bus().unregister(this);
+        super.onPause();
+    }
+
+    @Subscribe
+    public void onAppReady(App.ReadyEvent event) {
+        switcher.showNext();
     }
 
     @Override
@@ -128,11 +82,13 @@ public class MainActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    public void calljs(View view) {
-        rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
-        evalJs("var window = global;");
+    public void onClick(View view) {
+        App.get(this).evaluator().evaluate(code_et.getText().toString());
+    }
 
-        String code = code_et.getText().toString();
-        Object res = evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
+    @Override
+    public void updateUi(String msg) {
+        adapter.add(msg);
+        code_et.setText("");
     }
 }
