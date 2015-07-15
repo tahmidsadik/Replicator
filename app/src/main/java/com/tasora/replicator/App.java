@@ -6,6 +6,7 @@ import android.os.Handler;
 import android.os.Looper;
 
 import com.squareup.otto.Bus;
+import com.squareup.otto.Produce;
 
 public class App extends Application {
 
@@ -15,6 +16,7 @@ public class App extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        bus.register(this);
         final Context context = this;
         new Thread() {
             @Override
@@ -35,6 +37,15 @@ public class App extends Application {
 
     public JSEvaluator evaluator() {
         return evaluator;
+    }
+
+    // When we exit and reopen the app we don't want to reload JS if already loaded
+    @Produce
+    public ReadyEvent produceReadyEvent() {
+        if (evaluator.isInitialised()) {
+            return new ReadyEvent();
+        }
+        return null;
     }
 
     public static class ReadyEvent {

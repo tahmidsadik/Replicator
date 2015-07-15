@@ -2,6 +2,7 @@ package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -9,6 +10,7 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ViewFlipper;
 import android.widget.ViewSwitcher;
 
 import com.squareup.otto.Subscribe;
@@ -20,7 +22,7 @@ import butterknife.OnClick;
 public class MainActivity extends AppCompatActivity implements JSEvaluator.Listener {
 
     @Bind(R.id.input) EditText input;
-    @Bind(R.id.switcher) ViewSwitcher switcher;
+    @Bind(R.id.switcher) BetterViewSwitcher switcher;
     @Bind(R.id.repl_history) ReplHistory replHistory;
 
     @OnClick(R.id.eval) void triggerEval() {
@@ -52,7 +54,7 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
 
     @Subscribe
     public void onAppReady(App.ReadyEvent event) {
-        switcher.showNext();
+        switcher.showSecond();
     }
 
     @Override
