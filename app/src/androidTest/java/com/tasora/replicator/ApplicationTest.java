@@ -1,4 +1,4 @@
-package com.tasora.replete;
+package com.tasora.replicator;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

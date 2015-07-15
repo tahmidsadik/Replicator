@@ -1,8 +1,7 @@
-package com.tasora.replete;
+package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -14,7 +13,7 @@ import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.ScriptableObject;
 
-import static com.tasora.replete.Util.convertStreamToString;
+import static com.tasora.replicator.Util.convertStreamToString;
 
 public class MainActivity extends AppCompatActivity {
     public static Context rhino_context;
@@ -57,9 +56,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        code_et = (EditText) findViewById(R.id.input);
-        repl_space = (LinearLayout) findViewById(R.id.repl_space);
+        setContentView(com.tasora.replicator.R.layout.activity_main);
+        code_et = (EditText) findViewById(com.tasora.replicator.R.id.input);
+        repl_space = (LinearLayout) findViewById(com.tasora.replicator.R.id.repl_space);
 
         //setting up js context
         setUpRhino();
@@ -76,6 +75,7 @@ public class MainActivity extends AppCompatActivity {
             e.printStackTrace();
         }
 
+        // Should do this in a background thread.
         evalJs(goog_base_source);
         evalJs(deps_source);
         evalJs("goog.isProvided_ = function(x) { return false; };");
@@ -92,7 +92,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(com.tasora.replicator.R.menu.menu_main, menu);
         return true;
     }
 
@@ -101,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         int id = item.getItemId();
 
         //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
+        if (id == com.tasora.replicator.R.id.action_settings) {
             return true;
         }
 
@@ -109,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void calljs(View view) {
-        rhino_context.evaluateString(rhino_scope, macros_source, "MainActivity", 1, null);
+        rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
         evalJs("var window = global;");
 
         String code = code_et.getText().toString();
