@@ -11,7 +11,7 @@ public class Util {
             "android.util.Log.d('RHINO: ', msg); };" +
             "var print = function(str_arg) {" +
             "android.util.Log.d('Replicator: ', str_arg);" +
-            "javaContext.update(str_arg); };";
+            "javaContext.replicatorLog(str_arg); };";
 
     public static final String PRINT_FN_SOURCE = "cljs.core.set_print_fn_BANG_.call(null,print);";
 
@@ -20,7 +20,7 @@ public class Util {
     public static final String REPLICATOR_IMPORT =
             "var CLOSURE_IMPORT_SCRIPT = function(src) {" +
             "if (src === 'undefined' || src === undefined) {return true;}" +
-            "javaContext.evalJsWithImport(src); return true;}";
+            "javaContext.replicatorImport(src); return true;}";
 
     public static final String TRACK_LOADED_LIBS_SOURCE = "cljs.core._STAR_loaded_libs_STAR_ = cljs.core.into.call(null, cljs.core.PersistentHashSet.EMPTY, [\"cljs.core\"]);\n" +
             "goog.require = function (name, reload) {\n" +

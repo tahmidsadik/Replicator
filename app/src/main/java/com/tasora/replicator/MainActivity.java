@@ -38,6 +38,7 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
         repl_space.setAdapter(adapter);
 
         evaluator.init(this);
+        evaluator.setListener(this);
     }
 
     @Override
