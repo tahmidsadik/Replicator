@@ -11,7 +11,7 @@ public class Util {
             "android.util.Log.d('RHINO: ', msg); };" +
             "var print = function(str_arg) {" +
             "android.util.Log.d('Replicator: ', str_arg);" +
-            "javaContext.updateUi(str_arg); };";
+            "javaContext.update(str_arg); };";
 
     public static final String PRINT_FN_SOURCE = "cljs.core.set_print_fn_BANG_.call(null,print);";
 
@@ -49,7 +49,7 @@ public class Util {
         return sb.toString();
     }
 
-    public static String importReplicator(String src, Activity a) throws Exception {
+    public static String importReplicator(String src, JSEvaluator js) throws Exception {
         String valid_path = "out/";
         if(src.startsWith("..")) {
             String[] import_path_arr = src.split("/");
@@ -80,6 +80,6 @@ public class Util {
             valid_path = "out/goog/" +src;
         }
         Log.d("Src path:", src);
-        return convertStreamToString(a.getAssets().open(valid_path));
+        return convertStreamToString(js.getAssets().open(valid_path));
     }
 }

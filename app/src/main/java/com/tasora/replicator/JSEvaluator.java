@@ -2,6 +2,7 @@ package com.tasora.replicator;
 
 
 import android.app.Activity;
+import android.content.res.AssetManager;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -10,6 +11,19 @@ import org.mozilla.javascript.ScriptableObject;
 import static com.tasora.replicator.Util.convertStreamToString;
 
 public class JSEvaluator {
+
+
+    public AssetManager getAssets() {
+        return assetManager;
+    }
+
+    interface Listener {
+        void updateUi(String msg);
+    }
+
+    private Listener listener;
+    private AssetManager assetManager;
+
     public static Context rhino_context;
     public static Scriptable rhino_scope;
     public String goog_base_source;
@@ -21,8 +35,11 @@ public class JSEvaluator {
     }
 
     public void init(Activity activity) {
+
+        listener = (Listener) activity;
+
         //setting up js context
-        setUpRhino(activity);
+        setUpRhino();
         setUpConsoleLog();
         setUpGlobalContext();
         setUpImportClosureScript();
@@ -30,11 +47,11 @@ public class JSEvaluator {
         setUpRepl(activity);
     }
 
-    public void setUpRhino(Activity activity) {
+    public void setUpRhino() {
         rhino_context = Context.enter();
         rhino_context.setOptimizationLevel(-1);
         rhino_scope = rhino_context.initStandardObjects();
-        ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(activity, rhino_scope));
+        ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(this, rhino_scope));
     }
 
     public void setUpConsoleLog() {
@@ -50,6 +67,7 @@ public class JSEvaluator {
     }
 
     public void setUpRepl(Activity activity) {
+        this.assetManager = activity.getAssets();
         //Reading cljs source and converting them to string so that we can eval them from Rhino
         try {
             goog_base_source = convertStreamToString(activity.getAssets().open("out/goog/base.js"));
@@ -73,9 +91,16 @@ public class JSEvaluator {
         evalJs("goog.require('cljs.core')");
     }
 
-    public void callJs(String code) {
+    public void evaluate(String code) {
         rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
         evalJs("var window = global;");
         Object res = evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
     }
+
+    public void update(String output) {
+        listener.updateUi(output);
+    }
+
+
+
 }
