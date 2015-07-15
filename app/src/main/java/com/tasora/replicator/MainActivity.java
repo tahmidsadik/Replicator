@@ -76,8 +76,10 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
 
     @Override
     public void updateUi(String msg) {
-        replHistory.push(msg);
-        input.setText("");
+        if(!msg.equals("\n")) {
+            replHistory.push(msg);
+            input.setText("");
+        }
     }
 
     private class EnterListener implements View.OnKeyListener {
