@@ -6,6 +6,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import org.mozilla.javascript.Context;
@@ -20,14 +22,17 @@ public class MainActivity extends AppCompatActivity {
     public String goog_base_source;
     public String deps_source;
     public String macros_source;
+    public EditText code_et;
+    public LinearLayout repl_space;
 
     public void updateUi(String msg) {
-        TextView tv = (TextView) findViewById(R.id.mysrc);
-        tv.setText(msg);
+        TextView result = new TextView(this);
+        result.setText(msg);
+        repl_space.addView(result);
     }
 
-    public static void evalJs(String src) {
-        rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
+    public static Object evalJs(String src) {
+        return rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
     }
 
     public void setUpRhino() {
@@ -53,6 +58,8 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        code_et = (EditText) findViewById(R.id.input);
+        repl_space = (LinearLayout) findViewById(R.id.repl_space);
 
         //setting up js context
         setUpRhino();
@@ -71,21 +78,15 @@ public class MainActivity extends AppCompatActivity {
 
         evalJs(goog_base_source);
         evalJs(deps_source);
-        rhino_context.evaluateString(rhino_scope, "goog.isProvided_ = function(x) { return false; };", "MainActivity", 1, null);
-        rhino_context.evaluateString(rhino_scope, "goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };", "MainActivity", 1, null);
-        rhino_context.evaluateString(rhino_scope, "goog.require('cljs.core');", "MainActivity", 1, null);
-        rhino_context.evaluateString(rhino_scope, "cljs.core._STAR_loaded_libs_STAR_ = cljs.core.into.call(null, cljs.core.PersistentHashSet.EMPTY, [\"cljs.core\"]);\n" +
-                "goog.require = function (name, reload) {\n" +
-                "    if(!cljs.core.contains_QMARK_(cljs.core._STAR_loaded_libs_STAR_, name) || reload) {\n" +
-                "        var AMBLY_TMP = cljs.core.PersistentHashSet.EMPTY;\n" +
-                "        if (cljs.core._STAR_loaded_libs_STAR_) {\n" +
-                "            AMBLY_TMP = cljs.core._STAR_loaded_libs_STAR_;\n" +
-                "        }\n" +
-                "        cljs.core._STAR_loaded_libs_STAR_ = cljs.core.into.call(null, AMBLY_TMP, [name]);\n" +
-                "        CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]);\n" +
-                "    }\n" +
-                "};", "MainActivity", 1, null);
-        rhino_context.evaluateString(rhino_scope, "goog.require('replete.core');", "MainActivity", 1, null);
+        evalJs("goog.isProvided_ = function(x) { return false; };");
+        evalJs("goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
+        evalJs("goog.require('cljs.core');");
+        evalJs(Util.TRACK_LOADED_LIBS_SOURCE);
+        evalJs(Util.PRINT_FN_SOURCE);
+        evalJs(macros_source);
+        evalJs("goog.require('replete.core');");
+        evalJs("goog.provide('cljs.user')");
+        evalJs("goog.require('cljs.core')");
     }
 
     @Override
@@ -109,7 +110,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void calljs(View view) {
         rhino_context.evaluateString(rhino_scope, macros_source, "MainActivity", 1, null);
-        Object res = rhino_context.evaluateString(rhino_scope, "replete.core.read-eval-print.call(null, '(+ 1 2)');", "MainActivity", 1, null);
-        Log.d("Result", res.toString());
+        evalJs("var window = global;");
+
+        String code = code_et.getText().toString();
+        Object res = evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
     }
 }
