@@ -3,6 +3,7 @@ package com.tasora.replicator;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.util.Log;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Scriptable;
@@ -11,11 +12,6 @@ import org.mozilla.javascript.ScriptableObject;
 import static com.tasora.replicator.Util.convertStreamToString;
 
 public class JSEvaluator {
-
-
-    public AssetManager getAssets() {
-        return assetManager;
-    }
 
     interface Listener {
         void updateUi(String msg);
@@ -30,11 +26,56 @@ public class JSEvaluator {
     public String deps_source;
     public String macros_source;
 
-    public static Object evalJs(String src) {
+    public Object evalJs(String src) {
         return rhino_context.evaluateString(rhino_scope, src, "Main Activity", 1, null);
     }
 
+    public String importReplicator(String src) throws Exception {
+        String valid_path = "out/";
+        if(src.startsWith("..")) {
+            String[] import_path_arr = src.split("/");
+            for (int i = 1; i < import_path_arr.length; i++) {
+                valid_path += import_path_arr[i];
+                if (i != import_path_arr.length - 1) {
+                    valid_path += "/";
+                }
+            }
+        } else if(src.startsWith("goog")) {
+            String[] import_path_arr = src.split("/");
+            for (int i = 0; i < import_path_arr.length; i++) {
+                valid_path += import_path_arr[i];
+                if (i != import_path_arr.length - 1) {
+                    valid_path += "/";
+                }
+            }
+        } else if(src.startsWith("cljs")) {
+            String[] import_path_arr = src.split("/");
+            for (int i = 0; i < import_path_arr.length; i++) {
+                valid_path += import_path_arr[i];
+                if (i != import_path_arr.length - 1) {
+                    valid_path += "/";
+                }
+            }
+        }
+        else {
+            valid_path = "out/goog/" +src;
+        }
+        Log.d("Src path:", src);
+        return convertStreamToString(assetManager.open(valid_path));
+    }
+
+    public Object evalJsWithImport(String src) {
+        try {
+
+        String importReplicator = importReplicator(src);
+        return rhino_context.evaluateString(rhino_scope, importReplicator, "Main Activity", 1, null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
     public void init(Activity activity) {
+        this.assetManager = activity.getAssets();
 
         listener = (Listener) activity;
 
@@ -67,12 +108,11 @@ public class JSEvaluator {
     }
 
     public void setUpRepl(Activity activity) {
-        this.assetManager = activity.getAssets();
         //Reading cljs source and converting them to string so that we can eval them from Rhino
         try {
-            goog_base_source = convertStreamToString(activity.getAssets().open("out/goog/base.js"));
-            deps_source = convertStreamToString(activity.getAssets().open("out/deps.js"));
-            macros_source = convertStreamToString(activity.getAssets().open("out/cljs/core$macros.js"));
+            goog_base_source = convertStreamToString(assetManager.open("out/goog/base.js"));
+            deps_source = convertStreamToString(assetManager.open("out/deps.js"));
+            macros_source = convertStreamToString(assetManager.open("out/cljs/core$macros.js"));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -100,7 +140,5 @@ public class JSEvaluator {
     public void update(String output) {
         listener.updateUi(output);
     }
-
-
 
 }
