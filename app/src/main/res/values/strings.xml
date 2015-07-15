@@ -1,4 +1,4 @@
 <resources>
     <string name="app_name">Replicator</string>
-    <string name="action_settings">Settings</string>
+    <string name="action_clear_history">Clear history</string>
 </resources>
