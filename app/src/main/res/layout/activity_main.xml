@@ -16,12 +16,11 @@
         android:layout_height="match_parent">
 
         <Button
-            android:id="@+id/eval_btn"
+            android:id="@+id/eval"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
             android:layout_alignParentRight="true"
-            android:onClick="onClick"
             android:text="Eval" />
 
         <EditText
@@ -29,19 +28,16 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/eval_btn"
+            android:layout_toLeftOf="@id/eval"
             android:hint="user=>"
             android:inputType="text" />
 
-        <ListView
-            android:id="@+id/repl_space"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_above="@id/eval_btn"
+        <com.tasora.replicator.ReplHistory
+            android:layout_above="@id/eval"
+            android:id="@+id/repl_history"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
-            android:stackFromBottom="true"
-            android:transcriptMode="normal" />
-
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
     </RelativeLayout>
 </ViewSwitcher>

@@ -13,35 +13,27 @@ import android.widget.ViewSwitcher;
 
 import com.squareup.otto.Subscribe;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+import butterknife.OnClick;
+
 public class MainActivity extends AppCompatActivity implements JSEvaluator.Listener {
 
-    private EditText code_et;
-    private ViewSwitcher switcher;
+    @Bind(R.id.input) EditText input;
+    @Bind(R.id.switcher) ViewSwitcher switcher;
+    @Bind(R.id.repl_history) ReplHistory replHistory;
 
-    private ArrayAdapter<String> adapter;
+    @OnClick(R.id.eval) void triggerEval() {
+        App.get(this).evaluator().evaluate(input.getText().toString());
+    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        code_et = (EditText) findViewById(R.id.input);
-        code_et.setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_DOWN
-                        && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
-                    onClick(code_et);
-                    return true;
-                }
-                return false;
-            }
-        });
-        switcher = (ViewSwitcher) findViewById(R.id.switcher);
-        ListView repl_space = (ListView) findViewById(com.tasora.replicator.R.id.repl_space);
-        adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
-        repl_space.setAdapter(adapter);
+        ButterKnife.bind(this);
 
-//        switcher.showNext();
+        input.setOnKeyListener(new EnterListener());
     }
 
     @Override
@@ -75,20 +67,29 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
         int id = item.getItemId();
 
         if (id == R.id.action_clear_history) {
-            adapter.clear();
+            replHistory.clear();
             return true;
         }
 
         return super.onOptionsItemSelected(item);
     }
 
-    public void onClick(View view) {
-        App.get(this).evaluator().evaluate(code_et.getText().toString());
-    }
-
     @Override
     public void updateUi(String msg) {
-        adapter.add(msg);
-        code_et.setText("");
+        replHistory.push(msg);
+        input.setText("");
+    }
+
+    private class EnterListener implements View.OnKeyListener {
+
+        @Override
+        public boolean onKey(View v, int keyCode, KeyEvent event) {
+            if (event.getAction() == KeyEvent.ACTION_DOWN
+                    && event.getKeyCode() == KeyEvent.KEYCODE_ENTER) {
+                triggerEval();
+                return true;
+            }
+            return false;
+        }
     }
 }
