@@ -20,7 +20,6 @@ public class JSEvaluator {
     private Listener listener;
     private AssetManager assetManager;
 
-    private static Context rhino_context;
     private static Scriptable rhino_scope;
     private String goog_base_source;
     private String deps_source;
@@ -60,38 +59,38 @@ public class JSEvaluator {
         return convertStreamToString(assetManager.open(valid_path));
     }
 
-    public void init(Activity activity) {
-        this.assetManager = activity.getAssets();
+    public void init(android.content.Context android) {
+        assetManager = android.getAssets();
 
+        Context context = Context.enter();
+        context.setOptimizationLevel(-1);
         //setting up js context
-        setUpRhino();
-        setUpConsoleLog();
-        setUpGlobalContext();
-        setUpImportClosureScript();
+        setUpRhino(context);
+        setUpConsoleLog(context);
+        setUpGlobalContext(context);
+        setUpImportClosureScript(context);
 
-        setUpRepl();
+        setUpRepl(context);
     }
 
-    private void setUpRhino() {
-        rhino_context = Context.enter();
-        rhino_context.setOptimizationLevel(-1);
-        rhino_scope = rhino_context.initStandardObjects();
+    private void setUpRhino(Context context) {
+        rhino_scope = context.initStandardObjects();
         ScriptableObject.putProperty(rhino_scope, "javaContext", Context.javaToJS(this, rhino_scope));
     }
 
-    private void setUpConsoleLog() {
-        evalJs(Util.REPLICATOR_LOG);
+    private void setUpConsoleLog(Context context) {
+        evalJs(context, Util.REPLICATOR_LOG);
     }
 
-    private void setUpGlobalContext() {
-        evalJs(Util.GLOBAL_CTX);
+    private void setUpGlobalContext(Context context) {
+        evalJs(context, Util.GLOBAL_CTX);
     }
 
-    private void setUpImportClosureScript() {
-        evalJs(Util.REPLICATOR_IMPORT);
+    private void setUpImportClosureScript(Context context) {
+        evalJs(context, Util.REPLICATOR_IMPORT);
     }
 
-    private void setUpRepl() {
+    private void setUpRepl(Context context) {
         //Reading cljs source and converting them to string so that we can eval them from Rhino
         try {
             goog_base_source = convertStreamToString(assetManager.open("out/goog/base.js"));
@@ -102,21 +101,21 @@ public class JSEvaluator {
         }
 
         // Should do this in a background thread.
-        evalJs(goog_base_source);
-        evalJs(deps_source);
-        evalJs("goog.isProvided_ = function(x) { return false; };");
-        evalJs("goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
-        evalJs("goog.require('cljs.core');");
-        evalJs(Util.TRACK_LOADED_LIBS_SOURCE);
-        evalJs(Util.PRINT_FN_SOURCE);
-        evalJs(macros_source);
-        evalJs("goog.require('replete.core');");
-        evalJs("goog.provide('cljs.user')");
-        evalJs("goog.require('cljs.core')");
+        evalJs(context, goog_base_source);
+        evalJs(context, deps_source);
+        evalJs(context, "goog.isProvided_ = function(x) { return false; };");
+        evalJs(context, "goog.require = function (name) { return CLOSURE_IMPORT_SCRIPT(goog.dependencies_.nameToPath[name]); };");
+        evalJs(context, "goog.require('cljs.core');");
+        evalJs(context, Util.TRACK_LOADED_LIBS_SOURCE);
+        evalJs(context, Util.PRINT_FN_SOURCE);
+        evalJs(context, macros_source);
+        evalJs(context, "goog.require('replete.core');");
+        evalJs(context, "goog.provide('cljs.user')");
+        evalJs(context, "goog.require('cljs.core')");
     }
 
-    private Object evalJs(String src) {
-        return rhino_context.evaluateString(rhino_scope, src, "JSEvaluator", 1, null);
+    private Object evalJs(Context context, String src) {
+        return context.evaluateString(rhino_scope, src, "JSEvaluator", 1, null);
     }
 
     // Called from Javascript
@@ -128,18 +127,27 @@ public class JSEvaluator {
 
     @SuppressWarnings("unused")
     public Object replicatorImport(String src) {
+        Context context = Context.enter();
         try {
-            return evalJs(replicatorImportStream(src));
+            return evalJs(context, replicatorImportStream(src));
         } catch (Exception e) {
             return null;
+        } finally {
+            Context.exit();
         }
     }
 
     // Called from Java Code
     public Object evaluate(String code) {
-        rhino_context.evaluateString(rhino_scope, macros_source, "user", 1, null);
-        evalJs("var window = global;");
-        return evalJs("replete.core.read_eval_print.call(null, '"+ code +"');");
+        Context context = Context.enter();
+        context.setOptimizationLevel(-1);
+        try {
+            context.evaluateString(rhino_scope, macros_source, "user", 1, null);
+            evalJs(context, "var window = global;");
+            return evalJs(context, "replete.core.read_eval_print.call(null, '"+ code +"');");
+        } finally {
+            Context.exit();
+        }
     }
 
     public void setListener(Listener listener) {

@@ -1,36 +1,47 @@
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:id="@+id/switcher"
     tools:context=".MainActivity">
 
-    <Button
-        android:id="@+id/eval_btn"
+    <ProgressBar
+        style="@android:style/Widget.Holo.ProgressBar.Large"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Eval"
-        android:layout_alignParentBottom="true"
-        android:layout_alignParentRight="true"
-        android:onClick="onClick" />
+        android:layout_gravity="center" />
 
-    <EditText
-        android:id="@+id/input"
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_toLeftOf="@id/eval_btn"
-        android:inputType="text"
-        android:hint="user=>"/>
+        android:layout_height="match_parent">
 
+        <Button
+            android:id="@+id/eval_btn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:onClick="onClick"
+            android:text="Eval" />
 
-    <ListView
-        android:id="@+id/repl_space"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="12dp"
-        android:layout_marginRight="12dp"
-        android:stackFromBottom="true"
-        android:transcriptMode="normal"
-        android:layout_above="@id/eval_btn"/>
+        <EditText
+            android:id="@+id/input"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_alignParentBottom="true"
+            android:layout_toLeftOf="@id/eval_btn"
+            android:hint="user=>"
+            android:inputType="text" />
 
-</RelativeLayout>
+        <ListView
+            android:id="@+id/repl_space"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_above="@id/eval_btn"
+            android:layout_marginLeft="12dp"
+            android:layout_marginRight="12dp"
+            android:stackFromBottom="true"
+            android:transcriptMode="normal" />
+
+    </RelativeLayout>
+</ViewSwitcher>

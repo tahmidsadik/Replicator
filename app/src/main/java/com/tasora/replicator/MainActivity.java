@@ -9,19 +9,22 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.ViewSwitcher;
+
+import com.squareup.otto.Subscribe;
 
 public class MainActivity extends AppCompatActivity implements JSEvaluator.Listener {
 
-    private JSEvaluator evaluator = new JSEvaluator();
     private EditText code_et;
+    private ViewSwitcher switcher;
 
     private ArrayAdapter<String> adapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.tasora.replicator.R.layout.activity_main);
-        code_et = (EditText) findViewById(com.tasora.replicator.R.id.input);
+        setContentView(R.layout.activity_main);
+        code_et = (EditText) findViewById(R.id.input);
         code_et.setOnKeyListener(new View.OnKeyListener() {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
@@ -33,12 +36,31 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
                 return false;
             }
         });
+        switcher = (ViewSwitcher) findViewById(R.id.switcher);
         ListView repl_space = (ListView) findViewById(com.tasora.replicator.R.id.repl_space);
         adapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1);
         repl_space.setAdapter(adapter);
 
-        evaluator.init(this);
-        evaluator.setListener(this);
+//        switcher.showNext();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        App.get(this).evaluator().setListener(this);
+        App.get(this).bus().register(this);
+    }
+
+    @Override
+    protected void onPause() {
+        App.get(this).evaluator().unsetListener();
+        App.get(this).bus().unregister(this);
+        super.onPause();
+    }
+
+    @Subscribe
+    public void onAppReady(App.ReadyEvent event) {
+        switcher.showNext();
     }
 
     @Override
@@ -61,7 +83,7 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
     }
 
     public void onClick(View view) {
-        evaluator.evaluate(code_et.getText().toString());
+        App.get(this).evaluator().evaluate(code_et.getText().toString());
     }
 
     @Override
