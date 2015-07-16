@@ -2,6 +2,7 @@ package com.tasora.replicator;
 
 
 import android.content.res.AssetManager;
+import android.text.TextUtils;
 import android.util.Log;
 
 import org.mozilla.javascript.Context;
@@ -36,15 +37,7 @@ public class JSEvaluator {
                     validPath += "/";
                 }
             }
-        } else if(src.startsWith("goog")) {
-            String[] importPathArr = src.split("/");
-            for (int i = 0; i < importPathArr.length; i++) {
-                validPath += importPathArr[i];
-                if (i != importPathArr.length - 1) {
-                    validPath += "/";
-                }
-            }
-        } else if(src.startsWith("cljs")) {
+        } else if(src.startsWith("goog") || (src.startsWith("cljs"))) {
             String[] importPathArr = src.split("/");
             for (int i = 0; i < importPathArr.length; i++) {
                 validPath += importPathArr[i];
@@ -124,8 +117,11 @@ public class JSEvaluator {
     // Called from Javascript
     @SuppressWarnings("unused")
     public void replicatorLog(String output) {
-        if (listener!= null)
-            listener.updateUi(output);
+        if (listener!= null) {
+            if(!TextUtils.isEmpty(output)) {
+                listener.updateUi(output);
+            }
+        }
     }
 
     @SuppressWarnings("unused")
