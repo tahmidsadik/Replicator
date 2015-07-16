@@ -2,6 +2,7 @@ package com.tasora.replicator;
 
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.text.TextUtils;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -26,7 +27,9 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
     @Bind(R.id.repl_history) ReplHistory replHistory;
 
     @OnClick(R.id.eval) void triggerEval() {
-        App.get(this).evaluator().evaluate(input.getText().toString());
+        String inputCode = input.getText().toString();
+        updateInput("user=> " + inputCode);
+        App.get(this).evaluator().evaluate(inputCode);
     }
 
     @Override
@@ -80,9 +83,15 @@ public class MainActivity extends AppCompatActivity implements JSEvaluator.Liste
     public void updateUi(String msg) {
         if(!msg.equals("\n")) {
             replHistory.push(msg);
-            input.setText("");
         }
     }
+
+    public void updateInput(String inputCode) {
+        replHistory.push(inputCode);
+        input.setText("");
+    }
+
+
 
     private class EnterListener implements View.OnKeyListener {
 
