@@ -3,7 +3,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:id="@+id/switcher"
-    tools:context=".MainActivity">
+    tools:context=".MainActivity"
+    android:background="@color/white">
 
     <ProgressBar
         style="@android:style/Widget.Holo.ProgressBar.Large"
@@ -37,7 +38,9 @@
             android:id="@+id/repl_history"
             android:layout_marginLeft="12dp"
             android:layout_marginRight="12dp"
+            android:background="@color/white"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"/>
     </RelativeLayout>
 </com.tasora.replicator.BetterViewSwitcher>
