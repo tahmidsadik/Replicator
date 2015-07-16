@@ -37,7 +37,9 @@ public class ReplHistory extends FrameLayout {
         inflate(getContext(), R.layout.list_content, this);
         ButterKnife.bind(this);
 
-        adapter = new ArrayAdapter<String>(getContext(), android.R.layout.simple_list_item_1);
+        adapter = new ArrayAdapter<String>(getContext(), R.layout.repl_results);
+        listView.setDivider(null);
+        listView.setDividerHeight(0);
         listView.setAdapter(adapter);
     }
 
