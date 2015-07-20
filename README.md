@@ -1,7 +1,7 @@
 ## Replicator
 Bootstrapped ClojureScript REPL for Android  
 Heavily inspired by [Replete](https://github.com/mfikes/replete).   
-Currently using Rhino as the javascript engine but will move to JavaScriptCore later.  
+Currently using V8 as the javascript engine but will move to JavaScriptCore eventually.  
 
 ## Running
 Just Open the project in Android Studio and run the app on a device or simulator (`Make sure you use Geny Motion for best performance`)
