@@ -1,16 +1,17 @@
-package com.tasora.replicator;
+package me.tahmid.replicator_webview;
 
+//taken from Frankie Sardo's code
 
 import android.content.Context;
 import android.util.AttributeSet;
 import android.widget.ViewFlipper;
 
-public class BetterViewSwitcher extends ViewFlipper {
-    public BetterViewSwitcher(Context context) {
+public class BetterViewFlipper extends ViewFlipper{
+    public BetterViewFlipper(Context context) {
         super(context);
     }
 
-    public BetterViewSwitcher(Context context, AttributeSet attrs) {
+    public BetterViewFlipper(Context context, AttributeSet attrs) {
         super(context, attrs);
     }
 

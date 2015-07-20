@@ -1,46 +1,52 @@
-<com.tasora.replicator.BetterViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="match_parent"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools" android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:id="@+id/switcher"
     tools:context=".MainActivity"
     android:background="@color/white">
 
-    <ProgressBar
-        style="@android:style/Widget.Holo.ProgressBar.Large"
+    <Button
+        android:id="@+id/eval_btn"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_gravity="center" />
-
-    <RelativeLayout
+        android:text="@string/eval_button_text"
+        android:layout_alignParentBottom="true"
+        android:layout_alignParentRight="true"
+        android:minHeight="30dp"
+        android:minWidth="45dp"
+        android:background="@android:color/transparent"
+        android:layout_marginRight="16dp"
+        android:layout_marginBottom="10dp"
+        android:textSize="14sp"/>
+    <EditText
+        android:id="@+id/input_code"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_toLeftOf="@id/eval_btn"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="2dp"
+        android:typeface="monospace"
+        android:layout_marginLeft="16dp"
+        android:layout_marginRight="12dp"
+        android:textSize="14sp"/>
 
-        <Button
-            android:id="@+id/eval"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_alignParentRight="true"
-            android:text="Eval" />
+    <ListView
+        android:id="@+id/repl_history"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_above="@id/input_code"
+        android:paddingLeft="16dp"
+        android:paddingRight="16dp"
+        android:layout_marginBottom="16dp"
+        android:background="@color/white"
+        android:transcriptMode="normal"
+        android:stackFromBottom="true">
+    </ListView>
 
-        <EditText
-            android:id="@+id/input"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_alignParentBottom="true"
-            android:layout_toLeftOf="@id/eval"
-            android:hint="user=>"
-            android:inputType="text" />
+    <WebView
+        android:id="@+id/js_evaluator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:visibility="gone">
+    </WebView>
 
-        <com.tasora.replicator.ReplHistory
-            android:layout_above="@id/eval"
-            android:id="@+id/repl_history"
-            android:layout_marginLeft="12dp"
-            android:layout_marginRight="12dp"
-            android:background="@color/white"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="20dp"/>
-    </RelativeLayout>
-</com.tasora.replicator.BetterViewSwitcher>
+</RelativeLayout>

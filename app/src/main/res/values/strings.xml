@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">Replicator</string>
-    <string name="action_clear_history">Clear history</string>
+
+    <string name="hello_world">Hello world!</string>
+    <string name="action_settings">Clear</string>
+    <string name="eval_button_text">Eval</string>
 </resources>

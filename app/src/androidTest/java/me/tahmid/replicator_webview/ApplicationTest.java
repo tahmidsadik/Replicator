@@ -1,4 +1,4 @@
-package com.tasora.replicator;
+package me.tahmid.replicator_webview;
 
 import android.app.Application;
 import android.test.ApplicationTestCase;

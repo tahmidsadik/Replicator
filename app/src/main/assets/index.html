@@ -1,0 +1,17 @@
+<html>
+	<head>
+		<script type="text/javascript" src="goog/base.js"></script>
+		<script type="text/javascript" src="goog/app.js"></script>
+		<script type="text/javascript">goog.require('cljs.core');</script>
+		<script type="text/javascript">goog.require('cljs.core$macros');</script>
+		<script type="text/javascript">goog.require('replete.core');</script>
+		<script type="text/javascript">
+			var print = function(result) {replicator.triggerUiUpdate(result);};
+			cljs.core.set_print_fn_BANG_.call(null, print);
+			goog.provide('cljs.user');
+			replicator.replDidLoad();
+		</script>
+	</head>
+	<body>
+	</body>
+</html>
